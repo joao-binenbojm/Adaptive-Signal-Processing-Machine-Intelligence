@@ -1,0 +1,8 @@
+function [rho,eta] = circularity(data)
+%CIRCULARITY(data) Computes circularity quotient and coefficient
+%   Takes in complex data and returns circularity coefficient and
+%   circularity quotient
+    
+
+end
+
