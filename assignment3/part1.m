@@ -90,7 +90,7 @@ for j = 1:3
     end
     str = split(names{j},'-');
     tit = strcat(upper(str{1}(1)), str{1}(2:end), ' Wind');
-    legend('CLMS','ALMS');
+    legend('CLMS','ACLMS');
     xlabel('Filter Order'); ylabel('MSPE (dB)');
     title(tit);
     hold off;
@@ -127,12 +127,12 @@ for idx = 1:length(Va)
 end
 % Plotting circularity diagrams
 figure(1); subplot(1,2,1); 
-hold on; set(gca,'fontsize', 16);
+hold on; set(gca,'fontsize', 14);
 plot(v,'bo'); plot(v_unbalanced1,'ro'); plot(v_unbalanced2,'ko');
 xlabel('Re(z)'); ylabel('Im(z)');
 title('System Voltages');
 legend('Balanced', 'Unbalanced (V)', 'Unbalanced ($\phi$)','Interpreter','Latex');
-subplot(1,2,2); hold on; set(gca,'fontsize', 16);
+subplot(1,2,2); hold on; set(gca,'fontsize', 14);
 plot([0:0.1:1.2], eta(1,:))
 plot([0:0.1:1.2], eta(2,:))
 xlabel('Deviation from balanced system (%)'); ylabel('Circularity Coefficient');
