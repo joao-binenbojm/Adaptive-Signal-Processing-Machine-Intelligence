@@ -60,7 +60,7 @@ for idx = 1:3
     H = zeros(n_samples,n_samples);
     for n = 1:n_samples
         % Run complex-valued LMS algorithm to estimate AR coefficient aˆ1(n)
-        [h, w] = freqz(1 , [1; -conj(a(n))], n_samples); % Compute power spectrum
+        [h, w] = freqz(1 , [1; -conj(a(n))], n_samples,fs); % Compute power spectrum
         H(:, n) = abs(h).^2; % Store it in a matrix 
     end
     % Remove outliers in the matrix H
@@ -68,10 +68,10 @@ for idx = 1:3
     H(H > medianH) = medianH;
     % Plotting
     subplot(1,3,idx); hold on; set(gca,'fontsize', 16);
-    mesh([1:n_samples], w/pi, H);
+    mesh([1:n_samples], w, H);
     view(2);
     xlabel('Time (samples)');
-    ylabel('Frequency (\times \pi rad/sample)');
+    ylabel('Frequency (Hz)');
     title(strcat('CLMS Spectral Estimate ($\mu=',num2str(lrs(idx)),'$)'), 'Interpreter', 'Latex');
 end
 
