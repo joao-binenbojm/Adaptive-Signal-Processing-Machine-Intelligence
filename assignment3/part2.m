@@ -26,20 +26,18 @@ H = zeros(4,1500); w = zeros(4,1500);
 for i = 1:4
     % Finding AR coefficients
     a = aryule(y,order(i));
-    [H(i,:),w(i,:)] = freqz(1,a,n_samples);
+    [H(i,:),w(i,:)] = freqz(1,a,n_samples,fs);
     P = abs(H(i,:)).^2;
-    plot(w(i,:)/pi, pow2db(P));
+    plot(w(i,:), pow2db(P));
 end
+plot(mean(f)*ones(1,1500), linspace(-10,30,1500),'--')
 title('AR Spectrum estimates')
-xlabel('Normalized Frequency (\times \pi rad/sample)'); 
+xlabel('Frequency (Hz)'); 
 ylabel('Power/frequency (dB/(rad/sample))');
-legend(arrayfun(@(a)strcat('p=',num2str(a)),order,'uni',0)); 
+leg = arrayfun(@(a)strcat('p=',num2str(a)),order,'uni',0);
+leg{end+1} = 'FMavg';
+legend(leg); 
 hold off;
-% Print the mean frequency of signal and mean freq of peak
-fprintf(mean(f));
-[~,I] = max(H(1,:));
-fprintf((w(1,I)/pi)*(fs/2));
-
 %% (b)
 clc; clear variables; close all;
 
