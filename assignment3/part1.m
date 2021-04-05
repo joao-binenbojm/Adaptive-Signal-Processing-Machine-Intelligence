@@ -193,7 +193,7 @@ f_aclms_unbalanced2 = FWL(q_aclms_unbalanced2,fs);
 figure(1); subplot(1,3,1); hold on; set(gca,'fontsize', 16);
 plot([1:length(f_clms_balanced)-2], f_clms_balanced(3:end),'LineWidth',3);
 plot([1:length(f_aclms_balanced)-2],f_aclms_balanced(3:end),'LineWidth',3);
-yticks([0,25,50,75,100]);
+yticks([0:25:100]);
 xlabel('Time (samples)'); ylabel('Frequency (Hz)');
 title('Balaced System','Interpreter','Latex'); 
 legend('CLMS','ACLMS'); ylim([0,100]);
@@ -217,12 +217,12 @@ legend('CLMS','ACLMS'); ylim([0,100]);
 
 % Frequency estimation of stricly linear autoregressive model
 function f = FSL(h,fs)
-    f = (fs/(2*pi))*atan(imag(h)./real(h));
+    f = (fs/(2*pi))*atan2(imag(h),real(h));
 end
 % Frequency estimation of widely linear autoregressive model
 function f = FWL(q,fs)
     h = q(1,:); 
     g = q(2,:);
     f = (fs/(2*pi))*...
-        atan((sqrt(imag(h).^2 - abs(g).^2)./real(h)));
+        atan2(real((sqrt(imag(h).^2 - abs(g).^2))),real(h));
 end
