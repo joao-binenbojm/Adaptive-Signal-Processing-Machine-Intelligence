@@ -1,10 +1,9 @@
 %% --- 1. CLASSICAL AND MODERN SPECTRUM ESTIMATION --- %%
+
+%% 1.3 Correlation Estimation %%
 close all;
 clear all;
 clc;
-
-
-%% 1.3 Correlation Estimation %%
 
 % Code validation
 t = [0:0.01:9.99]; fs = 100; x1 = 6*sin(2*pi*20*t) + 2*randn(size(t)); x2 = randn(size(t));
@@ -40,25 +39,25 @@ ylabel('ACF'); title('ACF of AR(4) Process (Unbiased)');
 %PSDs
 figure(2);
 % Biased
-subplot(2, 3, 1); plot(f, 10*log10(P1)); 
+subplot(3, 2, 1); plot(f, 10*log10(P1)); 
 set(gca,'fontsize', 14); xlabel('Normalized Frequency (\times \pi rad/sample)'); 
-ylabel('Power/frequency (dB/(rad/sample))'); title('PSD of Noisy Sinusoid (Biased)');
-subplot(2, 3, 2); plot(f, 10*log10(P2)); 
+ylabel('Pow/freq (dB/(rad/sample))'); title('PSD of Noisy Sinusoid (Biased)');
+subplot(3, 2, 3); plot(f, 10*log10(P2)); 
 set(gca,'fontsize', 14); xlabel('Normalized Frequency (\times \pi rad/sample)');
-ylabel('Power/frequency (dB/(rad/sample))'); title('PSD of WGN (Biased)');
-subplot(2, 3, 3); plot(f, 10*log10(P3)); 
+ylabel('Pow/freq (dB/(rad/sample))'); title('PSD of WGN (Biased)');
+subplot(3, 2, 5); plot(f, 10*log10(P3)); 
 set(gca,'fontsize', 14); xlabel('Normalized Frequency (\times \pi rad/sample)');
-ylabel('Power/frequency (dB/(rad/sample))'); title('PSD of AR(4) Process (Biased)');
+ylabel('Pow/freq (dB/(rad/sample))'); title('PSD of AR(4) Process (Biased)');
 % Unbiased
-subplot(2, 3, 4); plot(f, 10*log10(P1_unbiased)); 
+subplot(3, 2, 2); plot(f, 10*log10(P1_unbiased)); 
 set(gca,'fontsize', 14); xlabel('Normalized Frequency (\times \pi rad/sample)'); 
-ylabel('Power/frequency (dB/(rad/sample))'); title('PSD of Noisy Sinusoid (Unbiased)');
-subplot(2, 3, 5); plot(f, 10*log10(P2_unbiased)); 
+ylabel('Pow/freq (dB/(rad/sample))'); title('PSD of Noisy Sinusoid (Unbiased)');
+subplot(3, 2, 4); plot(f, 10*log10(P2_unbiased)); 
 set(gca,'fontsize', 14); xlabel('Normalized Frequency (\times \pi rad/sample)');
-ylabel('Power/frequency (dB/(rad/sample))'); title('PSD of WGN (Unbiased)');
-subplot(2, 3, 6); plot(f, 10*log10(P3_unbiased)); 
+ylabel('Pow/freq (dB/(rad/sample))'); title('PSD of WGN (Unbiased)');
+subplot(3, 2, 6); plot(f, 10*log10(P3_unbiased)); 
 set(gca,'fontsize', 14); xlabel('Normalized Frequency (\times \pi rad/sample)');
-ylabel('Power/frequency (dB/(rad/sample))'); title('PSD of AR(4) Process (Unbiased)');
+ylabel('Pow/freq (dB/(rad/sample))'); title('PSD of AR(4) Process (Unbiased)');
 
 %% Part b/c 
 clc; clear all; close all;

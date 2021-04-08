@@ -14,7 +14,7 @@ RRI_data = {xRRI_1; xRRI_2; xRRI_3};
 leg = {'Standard', '(W = 50s)', '(W = 150s)'};
 figure(1);
 for j = 1:3 % Trials
-    subplot(1, 3, j); hold on;
+    subplot(3, 1, j); hold on;
     L = length(RRI_data{j}); wl = [L, 50*fsRRI_1, 150*fsRRI_1];
     for i = 1:3 % Window sizes
         [P_mean, w] = pwelch(RRI_data{j}, wl(i), 0, L, 4);
@@ -22,7 +22,7 @@ for j = 1:3 % Trials
     end
     set(gca,'fontsize', 14);
     xlabel('Frequency (Hz)');
-    ylabel('Power/frequency (dB/(rad/sample))'); 
+    ylabel('Pow/freq (dB/(rad/sample))'); 
     title(sprintf('RRI PSD Estimate (Trial %d)', j));
     legend(leg); hold off;
 end

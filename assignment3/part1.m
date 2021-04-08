@@ -190,7 +190,7 @@ f_aclms_unbalanced1 = FWL(q_aclms_unbalanced1,fs);
 f_clms_unbalanced2 = FSL(h_clms_unbalanced2,fs);
 f_aclms_unbalanced2 = FWL(q_aclms_unbalanced2,fs);
 %Plotting frequency estimates
-figure(1); subplot(1,3,1); hold on; set(gca,'fontsize', 16);
+figure(1); subplot(3,1,1); hold on; set(gca,'fontsize', 16);
 plot([1:length(f_clms_balanced)-2], f_clms_balanced(3:end),'LineWidth',3);
 plot([1:length(f_aclms_balanced)-2],f_aclms_balanced(3:end),'LineWidth',3);
 yticks([0:25:100]);
@@ -198,7 +198,7 @@ xlabel('Time (samples)'); ylabel('Frequency (Hz)');
 title('Balaced System','Interpreter','Latex'); 
 legend('CLMS','ACLMS'); ylim([0,100]);
 
-subplot(1,3,2); hold on; set(gca,'fontsize', 16);
+subplot(3,1,2); hold on; set(gca,'fontsize', 16);
 plot([1:length(f_clms_unbalanced1)-2], f_clms_unbalanced1(3:end),'LineWidth',2);
 plot([1:length(f_aclms_unbalanced1)-2],f_aclms_unbalanced1(3:end),'LineWidth',2);
 yticks([0,25,50,75,100]);
@@ -206,7 +206,7 @@ xlabel('Time (samples)'); ylabel('Frequency (Hz)');
 title('Unbalanced System (V)','Interpreter','Latex'); 
 legend('CLMS','ACLMS'); ylim([0,100]);
 
-subplot(1,3,3); hold on; set(gca,'fontsize', 16);
+subplot(3,1,3); hold on; set(gca,'fontsize', 16);
 plot([1:length(f_clms_unbalanced2)-2], f_clms_unbalanced2(3:end),'LineWidth',2);
 plot([1:length(f_aclms_unbalanced2)-2],f_aclms_unbalanced2(3:end),'LineWidth',2);
 yticks([0,25,50,75,100]);

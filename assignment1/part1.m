@@ -31,23 +31,23 @@ P_rxx2 = abs(fftshift(fft(Rxx2)));
 periodogram2 = (abs(fftshift(fft(S2))).^2)/L;
 
 figure(1); 
-subplot(2, 3, 1);
-plot(t, S1);set(gca,'fontsize', 14); xlabel('t (s)'); ylabel('Y(t)'); title('Pulse');
-subplot(2, 3, 2);
+subplot(3, 2, 1);
+plot(t, S1);set(gca,'fontsize', 16); xlabel('t (s)'); ylabel('Y(t)'); title('Pulse');
+subplot(3, 2, 3);
 plot([-L+1:L-1], Rxx1, 'r');
 set(gca,'fontsize', 14); xlabel('Time lag (k)'); ylabel('ACF'); title('Fast-decaying ACF')
-subplot(2, 3, 3); hold on;
+subplot(3, 2, 5); hold on;
 plot(f1, P_rxx1, 'r'); plot(f2, periodogram, '--b');
 set(gca,'fontsize', 14); xlabel('Frequency (Hz)'); ylabel('Magnitude'); title('PSD');
 legend('Def. 1', 'Def. 2'); ylim([0 0.002]); hold off;
 %%%%%%
-subplot(2, 3, 4);
+subplot(3, 2, 2);
 plot(t,S2); set(gca,'fontsize', 14); xlabel('t (s)'); ylabel('Y(t)'); title('Sinusoidal signal');
-subplot(2, 3, 5);
+subplot(3, 2, 4);
 plot([-L+1:L-1], Rxx2);
 set(gca,'fontsize', 14); 
 xlabel('Time lag (k)'); ylabel('ACF'); title('Slow-decaying ACF');
-subplot(2, 3, 6); hold on;
+subplot(3, 2, 6); hold on;
 plot(f1, P_rxx2, 'r');
 plot(f2, periodogram2, '--b');
 set(gca,'fontsize', 14); 

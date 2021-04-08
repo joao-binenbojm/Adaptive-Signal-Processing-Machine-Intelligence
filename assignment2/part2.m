@@ -26,11 +26,11 @@ for k = 1:3
         end
         % Plot appropriate graph obtained
         param_error = -(squeeze(mean(params_tot(j, :, :), 3) - wo));
-        subplot(1, 3, k); hold on; set(gca,'fontsize', 18); %ylim([0, 1]);
+        subplot(3, 1, k); hold on; set(gca,'fontsize', 18); %ylim([0, 1]);
         plot([1:length(param_error)], param_error); ylim([0, 1]);
         hold off
     end
-    subplot(1, 3, k); title(sprintf('GASS Weight Error Curves ($\\mu_{0}=%.1f$)',lr0(k)), 'Interpreter', 'Latex');
+    subplot(3, 1, k); title(sprintf('GASS Weight Error Curves ($\\mu_{0}=%.1f$)',lr0(k)), 'Interpreter', 'Latex');
     legend('$\mu=0.01$','$\mu=0.1$', 'Benveniste', 'Ang \& Farhang', 'Matthews \& Xie', 'Interpreter', 'Latex'); 
     ylabel('Weight Error'); xlabel('Time Step');
 end
