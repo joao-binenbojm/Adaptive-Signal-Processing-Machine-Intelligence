@@ -5,6 +5,9 @@ close all;
 clear all;
 clc;
 
+% Add data folder to path
+addpath('../data');
+
 % Code validation
 t = [0:0.01:9.99]; fs = 100; x1 = 6*sin(2*pi*20*t) + 2*randn(size(t)); x2 = randn(size(t));
 model = arima('Constant', 0,'AR',{2.21, -2.94, 2.17, -0.96},'Variance',1); x3 = simulate(model, length(t));
@@ -61,6 +64,10 @@ ylabel('Pow/freq (dB/(rad/sample))'); title('PSD of AR(4) Process (Unbiased)');
 
 %% Part b/c 
 clc; clear all; close all;
+
+% Add data folder to path
+addpath('../data');
+
 t = [0:0.01:9.99]; fs = 100; P1_store = [];
 noisy_sinusoid = repmat(sin(2*pi*20*t) - sin(2*pi*10*t), 1000, 1)' + 10*randn(1000, 1000);
 figure(1);
@@ -92,6 +99,10 @@ title('Standard deviation of PSD estimate (dB)'); hold off;
 
 %% Part d - Generating complex exponentials
 clc; clear all; close all;
+
+% Add data folder to path
+addpath('../data');
+
 t = [0:0.02:9.98]; fs = 50; 
 x = 2*exp(i * 2 * pi * 19 * t) + 3*exp(i * 2 * pi * 20 * t);
 [P1, f1] = correlogram(x(1:20), 'biased', fs);

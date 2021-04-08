@@ -6,6 +6,9 @@ close all;
 clear all;
 clc;
 
+% Add data folder to path
+addpath('../data');
+
 % a. Sunspot time-series
 load sunspot.dat
 
@@ -51,12 +54,16 @@ xlabel('Normalized Frequency (\times \pi rad/sample)');
 ylabel('Power/frequency (dB/(rad/sample))'); title('PSD Estimates (Log Data)');
 legend('Raw', 'Centered', 'Detrended'); hold off;
 %% b. EEG
+clc; clear variables; close all;
+
+% Add data folder to path
+addpath('../data');
+
 load EEG_Data_Assignment1.mat;
 f_stimulus_range = [11:20]; T = 1/fs; L = length(POz);
 POz = normalize(POz);
 [P_c, f] = pwelch(POz, L, 0, L, fs); % Ensures 5 DFT samples/Hz
 wl = [1, 5, 10]/T; % Number of samples per window
-
 
 % Plotting PSD Estimates
 figure(1); subplot(2, 2, 1);

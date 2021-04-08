@@ -4,6 +4,10 @@
 
 %% (a) 
 clc; clear variables; close all;
+
+% Add data folder to path
+addpath('../data');
+
 b1 = 1.5 + 1i; b2 = 2.5 - 0.5i;
 realizations = 100;
 input = wgn(1000,realizations,0,'complex');
@@ -40,6 +44,9 @@ hold off;
 
 %% (b)
 clc; clear variables; close all;
+
+% Add data folder to path
+addpath('../data');
 
 % Combine two components as complex numbers and plot scatter plots
 complex_v = zeros(3,5000,'like',1i);
@@ -99,6 +106,9 @@ end
 %% (c)
 clc; clear variables; close all;
 
+% Add data folder to path
+addpath('../data');
+
 % Assume zero distortions, but mismatch in magnitude
 
 f0 = 50; % nominal frequency
@@ -145,6 +155,10 @@ clc; clear variables; close all;
 
 %% (e)
 clc; clear variables; close all;
+
+% Add data folder to path
+addpath('../data');
+
 f0 = 50; % nominal frequency
 fs = 500; % sampling frequency
 V = 10; % balanced magnitude

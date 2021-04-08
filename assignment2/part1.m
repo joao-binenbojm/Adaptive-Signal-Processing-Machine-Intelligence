@@ -8,6 +8,10 @@ clc; clear all; close all;
 
 %% (b)
 clc; clear all; close all;
+
+% Add data folder to path
+addpath('../data');
+
 a1 = 0.1; a2 = 0.8; std_eta = 0.5;
 data = filter([1], [1, -0.1, -0.8], std_eta*randn(1500, 100));
 data = data(501:end, :); % remove transient filter effects
@@ -41,6 +45,10 @@ hold off;
 
 %% (c) Misadjustments
 clc; clear all; close all;
+
+% Add data folder to path
+addpath('../data');
+
 a1 = 0.1; a2 = 0.8; std_eta = 0.5;
 data = filter([1], [1, -0.1, -0.8], std_eta*randn(200500, 100));
 data = data(501:end, :); % remove transient filter effects
@@ -58,6 +66,10 @@ M2 = (error_tot(2) - std_eta.^2)/std_eta.^2;
 
 %% (d) Estimating Steady-state Coefficients
 clc; clear all; close all;
+
+% Add data folder to path
+addpath('../data');
+
 a1 = 0.1; a2 = 0.8; std_eta = 0.5;
 data = filter([1], [1, -0.1, -0.8], std_eta*randn(2000, 100));
 data = data(501:end, :); % remove transient filter effects
@@ -94,6 +106,10 @@ hold off;
 
 %% (f) Leaky LMS
 clc; clear all; close all;
+
+% Add data folder to path
+addpath('../data');
+
 a1 = 0.1; a2 = 0.8; std_eta = 0.5;
 data = filter([1], [1, -0.1, -0.8], std_eta*randn(2000, 100));
 data = data(501:end, :); % remove transient filter effects

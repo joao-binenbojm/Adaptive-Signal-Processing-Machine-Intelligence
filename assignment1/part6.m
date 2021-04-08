@@ -4,6 +4,10 @@
 
 %% Part (a)
 clc; clear all; close all;
+
+% Add data folder to path
+addpath('../data');
+
 load PCAPCR;
 [Ux, Sx, Vx] = svd(X); [Un, Sn, Vn] = svd(Xnoise);
 
@@ -26,6 +30,10 @@ find_components(diag(Sx), 0.95)
 
 %% Part (b)
 clc; clear all; close all;
+
+% Add data folder to path
+addpath('../data');
+
 load PCAPCR;
 
 [U, S, V] = svds(Xnoise, 3); % keeps only principal components (3)
@@ -42,6 +50,10 @@ immse(X, X_noise_approx)
 
     %% Part (c)
 clc; clear all; close all;
+
+% Add data folder to path
+addpath('../data');
+
 load PCAPCR;
 
 % Computing weights

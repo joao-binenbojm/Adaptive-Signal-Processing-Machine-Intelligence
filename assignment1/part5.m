@@ -4,6 +4,9 @@
 
 %% Part a
 close all; clear all; clc;
+
+% Add data folder to path
+addpath('../data');
 load ECG_data;
 
 xRRI_1 = detrend(normalize(xRRI_1));
@@ -33,6 +36,9 @@ end
 
 %% Part c
 clc; clear all; close all;
+
+% Add data folder to path
+addpath('../data');
 load ECG_data;
 
 xRRI_1 = detrend(normalize(xRRI_1));
@@ -68,6 +74,9 @@ legend('Trial 1', 'Trial 2', 'Trial 3'); hold off;
 
 %% Confirming frequencies with MUSIC algorithm
 clc; clear all; close all;
+
+% Add data folder to path
+addpath('../data');
 load ECG_data;
 
 xRRI_1 = detrend(normalize(xRRI_1));

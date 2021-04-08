@@ -7,6 +7,9 @@ clear all;
 close all;
 clc;
 
+% Add data folder to path
+addpath('../data');
+
 % Simulations proof of estimate
 Fs = 1000; % sampling frequency
 T = 1/Fs; % sampling period

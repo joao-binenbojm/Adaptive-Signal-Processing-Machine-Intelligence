@@ -3,8 +3,11 @@
 %% 2.2. Adaptive Step Sizes %%
 
 %% (a) Adaptive step size algorithms
-
 clc; clear all; close all;
+
+% Add data folder to path
+addpath('../data');
+
 wo = 0.9; std_eta = (0.5).^0.5;
 input = std_eta*randn(1500, 1000);
 output = filter([1, wo], [1], input);
@@ -37,6 +40,9 @@ end
 
 %% (c) GNGD
 clc; clear all; close all;
+
+% Add data folder to path
+addpath('../data');
 
 % Computing the parameter and error dynamics for each method
 wo = 0.9; std_eta = (0.5).^0.5;

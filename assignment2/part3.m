@@ -4,6 +4,10 @@
 
 %% (a) Implementing ALE
 clc; clear variables; close all;
+
+% Add data folder to path
+addpath('../data');
+
 M = [5:5:20]; delta = [3:25]; lr = 0.01;
 eta = filter([1, 0, 0.5], [1], randn(1500, 1));
 eta = eta(501:end);
@@ -40,10 +44,12 @@ legend('Noisy signal', 'ALE', 'Clean signal')
 xlabel('Sample (n)'); ylabel('Signal'); title('ALE Signal Denoising');
 hold off;
 
-
-
 %% (b) Testing out ALE system
 clc; clear variables; close all;
+
+% Add data folder to path
+addpath('../data');
+
 lr = 0.01;
 eta = filter([1, 0, 0.5], [1], randn(1500, 1));
 eta = eta(501:end);
@@ -76,9 +82,12 @@ xlabel('Delay ($\Delta$)', 'Interpreter', 'Latex');
 ylabel('MSPE (dB)');
 title('MSPE vs. Delay (M=5)', 'Interpreter', 'Latex'); 
 
-
 %% (c) Testing out ANC system
 clc; clear variables; close all;
+
+% Add data folder to path
+addpath('../data');
+
 lr = 0.01;
 eta = filter([1, 0, 0.5], [1], randn(1500, 1));
 eta = eta(501:end);
@@ -118,6 +127,10 @@ hold off;
 
 %% (d) EEG Data!! 
 clc; clear variables; close all;
+
+% Add data folder to path
+addpath('../data');
+
 load EEG_Data_Assignment2;
 
 % Normalizing our data

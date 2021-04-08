@@ -1,8 +1,4 @@
 %% --- 1. CLASSICAL AND MODERN SPECTRUM ESTIMATION --- %%
-close all;
-clear all;
-clc;
-
 
 %% 1.4 Spectrum of Autoregressive Processes %%
 
@@ -10,6 +6,10 @@ clc;
 % this estimate can be highly erratic for larger lags close to N, where
 % fewer samples are available to estiamte to estimate the PSD. ACF may not
 % bepositive definite, resulting in negative PSD values.
+clc; clear variables; close all;
+
+% Add data folder to path
+addpath('../data');
 
 A = [1, -2.76, 3.81, -2.65, 0.92];
 x = filter(1, A, randn(1000, 1));
@@ -31,6 +31,10 @@ legend(leg); hold off;
 close all;
 clear all;
 clc;
+
+% Add data folder to path
+addpath('../data');
+
 n_samples = [1000, 10000]; titles = {'(1000 samples)', '(10000 samples)'};
 figure(1); 
 for j = 1:2

@@ -1,6 +1,9 @@
 %% --- 4. From LMS to Deep Learning --- %%
 %% (1) 
 clc; clear variables; close all;
+
+% Add data folder to path
+addpath('../data');
 load('time-series.mat');
 
 % Learning parameters
@@ -31,6 +34,9 @@ fprintf(sprintf('MSE: %.4f, Rp: %.4f',MSE,Rp));
 
 %% (2/3) 
 clc; clear variables; close all;
+
+% Add data folder to path
+addpath('../data');
 load('time-series.mat');
 
 % Learning parameters
@@ -61,6 +67,9 @@ fprintf(sprintf('MSE: %.4f, Rp: %.4f',MSE,Rp));
 
 %% (4) adding bias
 clc; clear variables; close all;
+
+% Add data folder to path
+addpath('../data');
 load('time-series.mat');
 
 % Learning parameters
@@ -90,6 +99,9 @@ fprintf(sprintf('MSE: %.4f, Rp: %.4f',MSE,Rp));
 
 %% (5) Introducted pretraining
 clc; clear variables; close all;
+
+% Add data folder to path
+addpath('../data');
 load('time-series.mat');
 
 % Learning parameters
@@ -119,4 +131,6 @@ fprintf(sprintf('MSE: %.4f, Rp: %.4f',MSE,Rp));
 
 %% (6) see report
 
-%% (7)
+%% (7) see report
+
+%% (8) see report

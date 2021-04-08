@@ -4,6 +4,9 @@
 %(a)
 clc; clear variables; close all;
 
+% Add data folder to path
+addpath('../data');
+
 n_samples = 1500;
 f = [100*ones(500,1); ...
     100*ones(500,1) + ([501:1000]' - 500)/2; ...
@@ -36,6 +39,9 @@ end
 
 %% (d)
 clc; clear variables; close all;
+
+% Add data folder to path
+addpath('../data');
 load('EEG_Data_Assignment2.mat');
 
 a = 3000;
