@@ -24,11 +24,12 @@ figure(1);
 for idx = 1:3
     [w,~] = dft_clms(y.', x, leaks(idx));
     % Plotting results
-    subplot(1,3,idx); hold on; set(gca,'fontsize', 16);
+    subplot(3,1,idx); hold on; set(gca,'fontsize', 16);
     mesh(time, f_ax(1:floor(fs/2)), abs(w(1:floor(fs/2),:)).^2);
     view(2);
     xlabel('Time (samples)');
     ylabel('Frequency (Hz)');
+    ylim([0,500]);
     title(strcat('CLMS Fourier Estimate ($\gamma=',num2str(leaks(idx)),'$)'),'Interpreter','Latex');
     hold off;
 end
