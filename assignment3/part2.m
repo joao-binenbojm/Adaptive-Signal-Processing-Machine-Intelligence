@@ -67,11 +67,12 @@ for idx = 1:3
     medianH = 50*median(median(H));
     H(H > medianH) = medianH;
     % Plotting
-    subplot(1,3,idx); hold on; set(gca,'fontsize', 16);
+    subplot(3,1,idx); hold on; set(gca,'fontsize', 16);
     mesh([1:n_samples], w, H);
     view(2);
     xlabel('Time (samples)');
     ylabel('Frequency (Hz)');
+    ylim([0,500]);
     title(strcat('CLMS Spectral Estimate ($\mu=',num2str(lrs(idx)),'$)'), 'Interpreter', 'Latex');
 end
 
