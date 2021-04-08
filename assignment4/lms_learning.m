@@ -22,7 +22,7 @@ function [params, err, y_hat] = lms_learning(y, x, order, lr, gamma, opt, lr_a, 
         [params, a] = pretrain(y,x,100,20,order,lr,gamma,lr_a,opt);
     else
          params = zeros(order+1,N); % params + bias
-         a = 40;
+         a = 30;
     end
     % Training on rest of data
     for n = 1:N

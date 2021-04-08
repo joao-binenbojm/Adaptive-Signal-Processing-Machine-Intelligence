@@ -109,7 +109,7 @@ for j = 1:2
         % Plot appropriate graph obtained
         params = squeeze(mean(params_tot, 3));
         subplot(3, 2, idx(k, j)); hold on;
-        set(gca,'fontsize', 14); ylim([0, 1]);
+        set(gca,'fontsize', 16); ylim([0, 1]);
         plot([1:length(params(1, :))], params(1,:)); %
         plot([1:length(params(2, :))], params(2, :));
         plot([1:length(params(1, :))], a1*ones(length(params(1, :))), '--');

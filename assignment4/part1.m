@@ -37,7 +37,7 @@ load('time-series.mat');
 y = detrend(y); % remove mean
 order = 4;
 x = [zeros(order,1); y]; % input to AR(4) model
-[params,error,y_hat] = lms_learning(y, x, order, 1e-6, 0, 'nonlinear',0.1,false);
+[params,error,y_hat] = lms_learning(y, x, order, 2e-7, 0, 'nonlinear',0.1,false);
 
 figure(1); 
 subplot(1,2,1); hold on; set(gca,'fontsize', 16);
