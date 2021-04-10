@@ -3,7 +3,7 @@
 <head><meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>1_Tensors_and_basic_operations</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
+<title>2_Efficient_representation_of_multidimensional_arrays</title><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"></script>
 
 
 
@@ -14280,7 +14280,7 @@ a.anchor-link {
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">from</span> <span class="nn">hottbox.core</span> <span class="kn">import</span> <span class="n">Tensor</span>
+<span class="kn">from</span> <span class="nn">hottbox.core</span> <span class="kn">import</span> <span class="n">Tensor</span><span class="p">,</span> <span class="n">TensorCPD</span><span class="p">,</span> <span class="n">TensorTKD</span>
 </pre></div>
 
      </div>
@@ -14297,16 +14297,27 @@ a.anchor-link {
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="Tensors-and-basic-operations">Tensors and basic operations<a class="anchor-link" href="#Tensors-and-basic-operations">&#182;</a></h1>
+<h1 id="Efficient-representation-of-multidimensional-arrays">Efficient representation of multidimensional arrays<a class="anchor-link" href="#Efficient-representation-of-multidimensional-arrays">&#182;</a></h1><p>A tensor of order $N$ is said to be of <strong>rank-1</strong> if it can be represented as an outer product of $N$ vectors.</p>
+<p>The figure below illustrates an example of a rank-1 tensor $\mathbf{\underline{X}}$ and provides intuition on how to compute the operation of outer product:</p>
+<p><img src="./imgs/outerproduct.png" alt="Drawing" style="width: 500px;"/></p>
+
 </div>
 </div>
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p><img src="./imgs/tensors_dogs.jpg" alt="Drawing" style="width: 500px;"/></p>
-<p>A tensor is a multi-dimenaional array of data where each dimension is conventionally referred to as the <strong>mode</strong>. Tensor order is defined by the number of its modes which is equivivalent to the number of indices required to identify a particular entry of a multi-dimensional array. For ease of visualisation and compact notation, we consider a third order tensor $\mathbf{\underline{X}} \in \mathbb{R}^{I \times J \times K}$. Thus, an element of such a tensor, $\mathbf{\underline{X}} \in \mathbb{R}^{I \times J \times K}$, can be written in a general form as:</p>
-$$ x_{ijk} = \mathbf{\underline{X}}[i, j, k]$$<blockquote><p><strong>Note:</strong> In order to be consistent with Python indexing, count of modes and elements within starts from zeros.</p>
-</blockquote>
-<p>Creation of a tensor starts with a formation of a multidimensional array of data.</p>
+<h1 id="Kruskal-representation">Kruskal representation<a class="anchor-link" href="#Kruskal-representation">&#182;</a></h1><p>For a third order tensor or rank $R$ the Kruskal representation can be expressed as follows:</p>
+$$
+\mathbf{\underline{X}} = \sum_{r=1}^R \mathbf{\underline{X}}_r = \sum_{r=1}^R \lambda_{r} \cdot \mathbf{a}_r \circ \mathbf{b}_r \circ \mathbf{c}_r
+$$<p>The vectors $\mathbf{a}_r, \mathbf{b}_r$ and $\mathbf{c}_r$ are oftentime combined into the corresponding <strong>factor matrices</strong>:</p>
+$$
+\mathbf{A} = \Big[ \mathbf{a}_1 \cdots \mathbf{a}_R \Big] \quad
+\mathbf{B} = \Big[ \mathbf{b}_1 \cdots \mathbf{b}_R \Big] \quad
+\mathbf{C} = \Big[ \mathbf{c}_1 \cdots \mathbf{c}_R \Big] \quad
+$$<p>Thus, if we employ the mode-$n$ product, the <strong>Kruskal representation</strong> takes the form:</p>
+$$
+\mathbf{\underline{X}} = \mathbf{\underline{\Lambda}} \times_1 \mathbf{A} \times_2 \mathbf{B} \times_3 \mathbf{C} = \Big[\mathbf{\underline{\Lambda}}; \mathbf{A}, \mathbf{B}, \mathbf{C} \Big]
+$$<p>where the elements on the super-diagonal of the core tensor $\mathbf{\underline{\Lambda}}$ are occupied by the values $\lambda_r$ and all other entries are equal to zero. This can be visualised as shown on figure below:</p>
+<p><img src="./imgs/TensorCPD.png" alt="Drawing" style="width: 500px;"/></p>
 
 </div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
@@ -14315,15 +14326,22 @@ $$ x_{ijk} = \mathbf{\underline{X}}[i, j, k]$$<blockquote><p><strong>Note:</stro
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[3]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Create 3-d array of data</span>
-<span class="n">array_3d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">24</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Create factor matrices</span>
+<span class="n">I</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">K</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span>
+<span class="n">R</span> <span class="o">=</span> <span class="mi">2</span>
 
-<span class="c1"># Create tensor</span>
-<span class="n">tensor</span> <span class="o">=</span> <span class="n">Tensor</span><span class="p">(</span><span class="n">array_3d</span><span class="p">)</span>
+<span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">I</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">J</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+<span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">K</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+
+<span class="c1"># Create core values</span>
+<span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">R</span><span class="p">)</span>
+
+<span class="c1"># Create Kruskal representation</span>
+<span class="n">tensor_cpd</span> <span class="o">=</span> <span class="n">TensorCPD</span><span class="p">(</span><span class="n">fmat</span><span class="o">=</span><span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="n">core_values</span><span class="o">=</span><span class="n">values</span><span class="p">)</span>
 
 <span class="c1"># Result preview</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span>
-<span class="n">tensor</span><span class="o">.</span><span class="n">data</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tensor_cpd</span><span class="p">)</span>
 </pre></div>
 
      </div>
@@ -14343,30 +14361,11 @@ $$ x_{ijk} = \mathbf{\underline{X}}[i, j, k]$$<blockquote><p><strong>Note:</stro
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>This tensor is of order 3 and consists of 24 elements.
-Sizes and names of its modes are (2, 3, 4) and [&#39;mode-0&#39;, &#39;mode-1&#39;, &#39;mode-2&#39;] respectively.
+<pre>Kruskal representation of a tensor with rank=(2,).
+Factor matrices represent properties: [&#39;mode-0&#39;, &#39;mode-1&#39;, &#39;mode-2&#39;]
+With corresponding latent components described by (3, 4, 5) features respectively.
 </pre>
 </div>
-</div>
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[3]:</div>
-
-
-
-
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>array([[[ 0,  1,  2,  3],
-        [ 4,  5,  6,  7],
-        [ 8,  9, 10, 11]],
-
-       [[12, 13, 14, 15],
-        [16, 17, 18, 19],
-        [20, 21, 22, 23]]])</pre>
-</div>
-
 </div>
 
 </div>
@@ -14377,10 +14376,16 @@ Sizes and names of its modes are (2, 3, 4) and [&#39;mode-0&#39;, &#39;mode-1&#3
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <h2 id="Assigment-1"><strong>Assigment 1</strong><a class="anchor-link" href="#Assigment-1">&#182;</a></h2><ol>
-<li>Create a tensor of order 5 (of any shape) and with all its values equal to 5. Then, calculate its Frobenious norm. </li>
-<li>Construct several tensors of orders varying from 3 to 20, with the size of each dimension equal to 2. Plot the relation between an order of a tensor and the number of its elements.</li>
-<li>Construct several tensors of order 3 with the size of each dimension varying from 3 to 15. Plot the relation between the size of dimensions of a tensor and the number of its elements.</li>
-<li>Analyse and compare the so obtained graphs.</li>
+<li><p>What is the order of a tensor if its Kruskal representation consists of 5 factor matrices.</p>
+</li>
+<li><p>What is the order of a tensor if its Kruskal representation consists of core tensor which has only 5 elements on the super-diagonal.</p>
+</li>
+<li><p>For a 3-rd order tensor that consists of 500 elements, provide three different Kruskal representations.</p>
+</li>
+<li><p>For a tensor that consits of 1000 elements, provide three Kruskal representations, each of which should have different number of factor matrices.</p>
+</li>
+<li><p>For a 4-th order tensor that consists of 2401 elements, provide Kruskal representation if its core tensor consisting of 81 elements.</p>
+</li>
 </ol>
 
 </div>
@@ -14395,9 +14400,9 @@ Sizes and names of its modes are (2, 3, 4) and [&#39;mode-0&#39;, &#39;mode-1&#3
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[4]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Create a tensor</span>
-<span class="n">t1</span> <span class="o">=</span> <span class="n">Tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">)))</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">t1</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">answer_1_1</span> <span class="o">=</span> <span class="s2">&quot;The order of a tensor is 5 if the Kruskal repsentation consists of 5 factor matrices. &quot;</span>  <span class="c1"># use this variable for your answer</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">answer_1_1</span><span class="p">)</span>
 </pre></div>
 
      </div>
@@ -14417,48 +14422,9 @@ Sizes and names of its modes are (2, 3, 4) and [&#39;mode-0&#39;, &#39;mode-1&#3
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>This tensor is of order 4 and consists of 81 elements.
-Sizes and names of its modes are (3, 3, 3, 3) and [&#39;mode-0&#39;, &#39;mode-1&#39;, &#39;mode-2&#39;, &#39;mode-3&#39;] respectively.
+<pre>The order of a tensor is 5 if the Kruskal repsentation consists of 5 factor matrices. 
 </pre>
 </div>
-</div>
-
-</div>
-
-</div>
-
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-     <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Calculate Frobenious norm</span>
-<span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">t1</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-</pre></div>
-
-     </div>
-</div>
-</div>
-</div>
-
-<div class="jp-Cell-outputWrapper">
-
-
-<div class="jp-OutputArea jp-Cell-outputArea">
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[5]:</div>
-
-
-
-
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>9.0</pre>
-</div>
-
 </div>
 
 </div>
@@ -14470,39 +14436,15 @@ Sizes and names of its modes are (3, 3, 3, 3) and [&#39;mode-0&#39;, &#39;mode-1
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <h3 id="Solution:-Part-2">Solution: Part 2<a class="anchor-link" href="#Solution:-Part-2">&#182;</a></h3>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[6]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-     <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Create tensors and collect information</span>
-<span class="n">element_counts</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="n">orders</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">21</span><span class="p">))</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">orders</span><span class="p">:</span>
-    <span class="n">dims</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">))</span>
-    <span class="n">t_current</span> <span class="o">=</span> <span class="n">Tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">dims</span><span class="p">))</span>
-    <span class="n">element_counts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t_current</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-</pre></div>
-
-     </div>
-</div>
-</div>
-</div>
-
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[7]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Plot results</span>
-<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">orders</span><span class="p">,</span> <span class="n">element_counts</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Tensor Order&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Element Count&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Element Count vs. Tensor Order (dim=2)&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">answer_1_2</span> <span class="o">=</span> <span class="s2">&quot;5&quot;</span>  <span class="c1"># use this variable for your answer</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">answer_1_2</span><span class="p">)</span>
 </pre></div>
 
      </div>
@@ -14521,14 +14463,10 @@ Sizes and names of its modes are (3, 3, 3, 3) and [&#39;mode-0&#39;, &#39;mode-1
     <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 
 
-
-
-<div class="jp-RenderedImage jp-OutputArea-output ">
-<img src="data:image/png;base64,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
-"
->
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>5
+</pre>
 </div>
-
 </div>
 
 </div>
@@ -14540,39 +14478,28 @@ Sizes and names of its modes are (3, 3, 3, 3) and [&#39;mode-0&#39;, &#39;mode-1
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <h3 id="Solution:-Part-3">Solution: Part 3<a class="anchor-link" href="#Solution:-Part-3">&#182;</a></h3>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[8]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-     <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Create tensors and collect information</span>
-<span class="n">element_counts</span> <span class="o">=</span> <span class="p">[]</span>
-<span class="n">orders</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">16</span><span class="p">))</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">orders</span><span class="p">:</span>
-    <span class="n">dims</span> <span class="o">=</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
-    <span class="n">t_current</span> <span class="o">=</span> <span class="n">Tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">dims</span><span class="p">))</span>
-    <span class="n">element_counts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">t_current</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
-</pre></div>
-
-     </div>
-</div>
-</div>
-</div>
-
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[9]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[6]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Plot results</span>
-<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">orders</span><span class="p">,</span> <span class="n">element_counts</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Tensor Order&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Element Count&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Element Count vs. Tensor Order (dim=3)&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># First representation</span>
+<span class="n">I</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">K</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span>
+<span class="n">R</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">I</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">J</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+<span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">K</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+
+<span class="c1"># Create core values</span>
+<span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">R</span><span class="p">)</span>
+
+<span class="c1"># Create Kruskal representation</span>
+<span class="n">tensor_cpd</span> <span class="o">=</span> <span class="n">TensorCPD</span><span class="p">(</span><span class="n">fmat</span><span class="o">=</span><span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="n">core_values</span><span class="o">=</span><span class="n">values</span><span class="p">)</span>
+
+<span class="c1"># Result preview</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tensor_cpd</span><span class="p">)</span>
 </pre></div>
 
      </div>
@@ -14591,52 +14518,40 @@ Sizes and names of its modes are (3, 3, 3, 3) and [&#39;mode-0&#39;, &#39;mode-1
     <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 
 
-
-
-<div class="jp-RenderedImage jp-OutputArea-output ">
-<img src="data:image/png;base64,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
-"
->
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Kruskal representation of a tensor with rank=(1,).
+Factor matrices represent properties: [&#39;mode-0&#39;, &#39;mode-1&#39;, &#39;mode-2&#39;]
+With corresponding latent components described by (50, 2, 5) features respectively.
+</pre>
 </div>
-
 </div>
 
 </div>
 
 </div>
 
-</div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h3 id="Solution:-Part-4">Solution: Part 4<a class="anchor-link" href="#Solution:-Part-4">&#182;</a></h3>
-</div>
-</div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p>As shown in the Figures above, increasing tensor order (TO) results in a more rapid increase in element count than increasing the size of the dimensions themselves, . This reflects the curse of dimensionality coined by Bellman.</p>
-
-</div>
-</div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="Most-common-tensor-substructures">Most common tensor substructures<a class="anchor-link" href="#Most-common-tensor-substructures">&#182;</a></h1><p><img src="./imgs/tensor_substructures.png" alt="Drawing" style="width: 500px;"/></p>
-<ol>
-<li><p>A <strong>fiber</strong> is a vector obtained by fixing all but one of the indices, e.g.  $\mathbf{\underline{X}}[i,:,k]$ is the mode-2 fiber $\mathbf{\underline{X}}$ (usually refered to as row fiber).</p>
-</li>
-<li><p>Fixing all but two of the indices yields a matrix called a <strong>slice</strong> of a tensor, e.g. $\mathbf{\underline{X}}[:,:,k]$ is the mode-[1,2] slice (usually refered to as the frontal slice).</p>
-</li>
-</ol>
-<p><strong>Note:</strong> The same principles and definitions can be applied to a tensor of an arbitrarily large order. In addition, you can obtain a <strong>subtensor</strong> by fixing at least three indices and letting the remaining ones vary.</p>
-
-</div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[10]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[7]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Mode-2 fiber</span>
-<span class="n">tensor</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,:]</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Second representation</span>
+<span class="n">I</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">K</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span>
+<span class="n">R</span> <span class="o">=</span> <span class="mi">3</span>
+
+<span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">I</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">J</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+<span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">K</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+
+<span class="c1"># Create core values</span>
+<span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">R</span><span class="p">)</span>
+
+<span class="c1"># Create Kruskal representation</span>
+<span class="n">tensor_cpd</span> <span class="o">=</span> <span class="n">TensorCPD</span><span class="p">(</span><span class="n">fmat</span><span class="o">=</span><span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="n">core_values</span><span class="o">=</span><span class="n">values</span><span class="p">)</span>
+
+<span class="c1"># Result preview</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tensor_cpd</span><span class="p">)</span>
 </pre></div>
 
      </div>
@@ -14652,15 +14567,175 @@ Sizes and names of its modes are (3, 3, 3, 3) and [&#39;mode-0&#39;, &#39;mode-1
 <div class="jp-OutputArea-child">
 
     
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[10]:</div>
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 
 
-
-
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>array([4, 5, 6, 7])</pre>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Kruskal representation of a tensor with rank=(3,).
+Factor matrices represent properties: [&#39;mode-0&#39;, &#39;mode-1&#39;, &#39;mode-2&#39;]
+With corresponding latent components described by (10, 5, 10) features respectively.
+</pre>
+</div>
 </div>
 
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[8]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Third representation</span>
+<span class="n">I</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">K</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">20</span>
+<span class="n">R</span> <span class="o">=</span> <span class="mi">5</span>
+
+<span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">I</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">J</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+<span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">K</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+
+<span class="c1"># Create core values</span>
+<span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">R</span><span class="p">)</span>
+
+<span class="c1"># Create Kruskal representation</span>
+<span class="n">tensor_cpd</span> <span class="o">=</span> <span class="n">TensorCPD</span><span class="p">(</span><span class="n">fmat</span><span class="o">=</span><span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="n">core_values</span><span class="o">=</span><span class="n">values</span><span class="p">)</span>
+
+<span class="c1"># Result preview</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tensor_cpd</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Kruskal representation of a tensor with rank=(5,).
+Factor matrices represent properties: [&#39;mode-0&#39;, &#39;mode-1&#39;, &#39;mode-2&#39;]
+With corresponding latent components described by (5, 5, 20) features respectively.
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h3 id="Solution:-Part-4">Solution: Part 4<a class="anchor-link" href="#Solution:-Part-4">&#182;</a></h3>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[9]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># First representation</span>
+<span class="n">I</span><span class="p">,</span> <span class="n">J</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">100</span>
+<span class="n">R</span> <span class="o">=</span> <span class="mi">2</span>
+
+<span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">I</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">J</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+
+<span class="c1"># Create core values</span>
+<span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">R</span><span class="p">)</span>
+
+<span class="c1"># Create Kruskal representation</span>
+<span class="n">tensor_cpd</span> <span class="o">=</span> <span class="n">TensorCPD</span><span class="p">(</span><span class="n">fmat</span><span class="o">=</span><span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">],</span> <span class="n">core_values</span><span class="o">=</span><span class="n">values</span><span class="p">)</span>
+
+<span class="c1"># Result preview</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tensor_cpd</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Kruskal representation of a tensor with rank=(2,).
+Factor matrices represent properties: [&#39;mode-0&#39;, &#39;mode-1&#39;]
+With corresponding latent components described by (10, 100) features respectively.
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[10]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Second representation</span>
+<span class="n">I</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">K</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span>
+<span class="n">R</span> <span class="o">=</span> <span class="mi">5</span>
+
+<span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">I</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">J</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+<span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">K</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+
+<span class="c1"># Create core values</span>
+<span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">R</span><span class="p">)</span>
+
+<span class="c1"># Create Kruskal representation</span>
+<span class="n">tensor_cpd</span> <span class="o">=</span> <span class="n">TensorCPD</span><span class="p">(</span><span class="n">fmat</span><span class="o">=</span><span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="n">core_values</span><span class="o">=</span><span class="n">values</span><span class="p">)</span>
+
+<span class="c1"># Result preview</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tensor_cpd</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Kruskal representation of a tensor with rank=(5,).
+Factor matrices represent properties: [&#39;mode-0&#39;, &#39;mode-1&#39;, &#39;mode-2&#39;]
+With corresponding latent components described by (5, 10, 20) features respectively.
+</pre>
+</div>
 </div>
 
 </div>
@@ -14673,8 +14748,23 @@ Sizes and names of its modes are (3, 3, 3, 3) and [&#39;mode-0&#39;, &#39;mode-1
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[11]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Frontal slice</span>
-<span class="n">tensor</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">,:,:]</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Third representation</span>
+<span class="n">I</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">L</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">2</span>
+<span class="n">R</span> <span class="o">=</span> <span class="mi">20</span>
+
+<span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">I</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">J</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+<span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">K</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">L</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+
+<span class="c1"># Create core values</span>
+<span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">R</span><span class="p">)</span>
+
+<span class="c1"># Create Kruskal representation</span>
+<span class="n">tensor_cpd</span> <span class="o">=</span> <span class="n">TensorCPD</span><span class="p">(</span><span class="n">fmat</span><span class="o">=</span><span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">D</span><span class="p">],</span> <span class="n">core_values</span><span class="o">=</span><span class="n">values</span><span class="p">)</span>
+
+<span class="c1"># Result preview</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tensor_cpd</span><span class="p">)</span>
 </pre></div>
 
      </div>
@@ -14690,17 +14780,143 @@ Sizes and names of its modes are (3, 3, 3, 3) and [&#39;mode-0&#39;, &#39;mode-1
 <div class="jp-OutputArea-child">
 
     
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[11]:</div>
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
 
 
-
-
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>array([[ 0,  1,  2,  3],
-       [ 4,  5,  6,  7],
-       [ 8,  9, 10, 11]])</pre>
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Kruskal representation of a tensor with rank=(20,).
+Factor matrices represent properties: [&#39;mode-0&#39;, &#39;mode-1&#39;, &#39;mode-2&#39;, &#39;mode-3&#39;]
+With corresponding latent components described by (5, 10, 10, 2) features respectively.
+</pre>
+</div>
 </div>
 
+</div>
+
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h3 id="Solution:-Part-5">Solution: Part 5<a class="anchor-link" href="#Solution:-Part-5">&#182;</a></h3>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[12]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Provide Kruskal representation here</span>
+<span class="n">I</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">L</span> <span class="o">=</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">7</span>
+<span class="n">R</span> <span class="o">=</span> <span class="mi">3</span>
+
+<span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">I</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">J</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+<span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">K</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">L</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+
+<span class="c1"># Create core values</span>
+<span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">R</span><span class="p">)</span>
+
+<span class="c1"># Create Kruskal representation</span>
+<span class="n">tensor_cpd</span> <span class="o">=</span> <span class="n">TensorCPD</span><span class="p">(</span><span class="n">fmat</span><span class="o">=</span><span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">D</span><span class="p">],</span> <span class="n">core_values</span><span class="o">=</span><span class="n">values</span><span class="p">)</span>
+
+<span class="c1"># Result preview</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tensor_cpd</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Kruskal representation of a tensor with rank=(3,).
+Factor matrices represent properties: [&#39;mode-0&#39;, &#39;mode-1&#39;, &#39;mode-2&#39;, &#39;mode-3&#39;]
+With corresponding latent components described by (7, 7, 7, 7) features respectively.
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h1 id="Tucker-representation">Tucker representation<a class="anchor-link" href="#Tucker-representation">&#182;</a></h1>
+</div>
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p><img src="./imgs/TensorTKD.png" alt="Drawing" style="width: 600px;"/></p>
+<p>For a tensor $\mathbf{\underline{X}} \in \mathbb{R}^{I \times J \times K}$ illustrated above, the <strong>Tucker form</strong> represents the tensor in hand through a dense core tensor $\mathbf{\underline{G}}$ with multi-linear rank ($Q, R, P$) and a set of accompanying factor matrices $\mathbf{A} \in \mathbb{R}^{I \times Q}, \mathbf{B} \in \mathbb{R}^{J \times R}$ and $\mathbf{C} \in \mathbb{R}^{K \times P}$.</p>
+$$
+\mathbf{\underline{X}} = \sum_{q=1}^Q \sum_{r=1}^R \sum_{p=1}^P \mathbf{\underline{X}}_{qrp} = \sum_{q=1}^Q \sum_{r=1}^R \sum_{p=1}^P g_{qrp} \cdot \mathbf{a}_q \circ \mathbf{b}_r \circ \mathbf{c}_p
+$$<p>The Tucker form of a tensor is closely related to the Kruskal representation and can be expressed through a 
+sequence of mode-$n$ products in a similar way, that is</p>
+$$
+\mathbf{\underline{X}} = \mathbf{\underline{G}} \times_1 \mathbf{A} \times_2 \mathbf{B} \times_3 \mathbf{C} = \Big[\mathbf{\underline{G}}; \mathbf{A}, \mathbf{B}, \mathbf{C} \Big]
+$$
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[13]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Create factor matrices</span>
+<span class="n">I</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">K</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span>  <span class="c1"># define shape of the tensor in full form</span>
+<span class="n">Q</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">P</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span>  <span class="c1"># define multi-linear rank of the tensor in Tucker form</span>
+
+<span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">I</span> <span class="o">*</span> <span class="n">Q</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">Q</span><span class="p">)</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">J</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+<span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">K</span> <span class="o">*</span> <span class="n">P</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span>
+
+<span class="c1"># Create core values</span>
+<span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">Q</span> <span class="o">*</span> <span class="n">R</span> <span class="o">*</span> <span class="n">P</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span>
+
+<span class="c1"># Create Tucker representation</span>
+<span class="n">tensor_tkd</span> <span class="o">=</span> <span class="n">TensorTKD</span><span class="p">(</span><span class="n">fmat</span><span class="o">=</span><span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="n">core_values</span><span class="o">=</span><span class="n">values</span><span class="p">)</span>
+
+<span class="c1"># Result preview</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tensor_tkd</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Tucker representation of a tensor with multi-linear rank=(2, 3, 4).
+Factor matrices represent properties: [&#39;mode-0&#39;, &#39;mode-1&#39;, &#39;mode-2&#39;]
+With corresponding latent components described by (5, 6, 7) features respectively.
+</pre>
+</div>
 </div>
 
 </div>
@@ -14711,8 +14927,14 @@ Sizes and names of its modes are (3, 3, 3, 3) and [&#39;mode-0&#39;, &#39;mode-1
 <div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <h2 id="Assigment-2"><strong>Assigment 2</strong><a class="anchor-link" href="#Assigment-2">&#182;</a></h2><ol>
-<li>Create a tensor of order 4 which consists of 81 elements and display all its horizontal slices and any five row fibers.</li>
-<li>Create a tensor of order 3 and shape <code>(4,2,5)</code>, where the values of each consequent frontal slice are doubled.</li>
+<li><p>Core tensor of a Tucker representation consists of 1848 elements. Explain what tensor order should a tensor have to able to be represented in such form.</p>
+</li>
+<li><p>For a 4-th order tensor that consists of 1000 elements, provide three different Tucker representations.</p>
+</li>
+<li><p>For a 3-rd order tensor that consists of 500 elements, provide three different Tucker representations given that its core tensor consists of 42 elements.</p>
+</li>
+<li><p>Provide an intuition behind the main difference between the Tucker and Kruskal representations.</p>
+</li>
 </ol>
 
 </div>
@@ -14724,136 +14946,16 @@ Sizes and names of its modes are (3, 3, 3, 3) and [&#39;mode-0&#39;, &#39;mode-1
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[12]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-     <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Create a tensor of order 4</span>
-<span class="n">t1</span> <span class="o">=</span> <span class="n">Tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">)))</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span>
-</pre></div>
-
-     </div>
-</div>
-</div>
-</div>
-
-<div class="jp-Cell-outputWrapper">
-
-
-<div class="jp-OutputArea jp-Cell-outputArea">
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-
-
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>This tensor is of order 3 and consists of 24 elements.
-Sizes and names of its modes are (2, 3, 4) and [&#39;mode-0&#39;, &#39;mode-1&#39;, &#39;mode-2&#39;] respectively.
-</pre>
-</div>
-</div>
-
-</div>
-
-</div>
-
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[13]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-     <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Display slices</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">):</span>
-    <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">3</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;tensor(</span><span class="si">{a}</span><span class="s1">,:,:,</span><span class="si">{b}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="n">i</span><span class="p">,</span><span class="n">b</span><span class="o">=</span><span class="n">j</span><span class="p">))</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">t1</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">,:,:,</span><span class="n">j</span><span class="p">])</span>
-        <span class="nb">print</span><span class="p">()</span>
-</pre></div>
-
-     </div>
-</div>
-</div>
-</div>
-
-<div class="jp-Cell-outputWrapper">
-
-
-<div class="jp-OutputArea jp-Cell-outputArea">
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-
-
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>tensor(0,:,:,0)
-[[1. 1. 1.]
- [1. 1. 1.]
- [1. 1. 1.]]
-
-tensor(0,:,:,1)
-[[1. 1. 1.]
- [1. 1. 1.]
- [1. 1. 1.]]
-
-tensor(0,:,:,2)
-[[1. 1. 1.]
- [1. 1. 1.]
- [1. 1. 1.]]
-
-tensor(1,:,:,0)
-[[1. 1. 1.]
- [1. 1. 1.]
- [1. 1. 1.]]
-
-tensor(1,:,:,1)
-[[1. 1. 1.]
- [1. 1. 1.]
- [1. 1. 1.]]
-
-tensor(1,:,:,2)
-[[1. 1. 1.]
- [1. 1. 1.]
- [1. 1. 1.]]
-
-tensor(2,:,:,0)
-[[1. 1. 1.]
- [1. 1. 1.]
- [1. 1. 1.]]
-
-tensor(2,:,:,1)
-[[1. 1. 1.]
- [1. 1. 1.]
- [1. 1. 1.]]
-
-tensor(2,:,:,2)
-[[1. 1. 1.]
- [1. 1. 1.]
- [1. 1. 1.]]
-
-</pre>
-</div>
-</div>
-
-</div>
-
-</div>
-
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[14]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Display fibers</span>
-<span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">)</span> <span class="ow">in</span> <span class="p">[(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">),(</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">),(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)]:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;tensor(</span><span class="si">{a}</span><span class="s1">,:,</span><span class="si">{b}</span><span class="s1">,1)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="n">i</span><span class="p">,</span><span class="n">b</span><span class="o">=</span><span class="n">j</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">t1</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">,:,</span><span class="n">j</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
-    <span class="nb">print</span><span class="p">()</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># use this variable for your answer</span>
+<span class="n">answer_2_1</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;1848 represents the number of elements in the dense core tensor of the decomposition. Given its prime</span>
+<span class="s2">factors of {2,2,2,3,7,11}, the tensor can be of any order from 1 (vector of length 1848) to a tensor of order 6 </span>
+<span class="s2">(dimensions 2x2x2x3x7x11).</span>
+<span class="s2">&quot;&quot;&quot;</span> 
+
+<span class="nb">print</span><span class="p">(</span><span class="n">answer_2_1</span><span class="p">)</span>
 </pre></div>
 
      </div>
@@ -14873,20 +14975,9 @@ tensor(2,:,:,2)
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>tensor(0,:,0,1)
-[1. 1. 1.]
-
-tensor(0,:,1,1)
-[1. 1. 1.]
-
-tensor(0,:,2,1)
-[1. 1. 1.]
-
-tensor(1,:,0,1)
-[1. 1. 1.]
-
-tensor(1,:,1,1)
-[1. 1. 1.]
+<pre>1848 represents the number of elements in the dense core tensor of the decomposition. Given its prime
+factors of {2,2,2,3,7,11}, the tensor can be of any order from 1 (vector of length 1848) to a tensor of order 6 
+(dimensions 2x2x2x3x7x11).
 
 </pre>
 </div>
@@ -14907,15 +14998,23 @@ tensor(1,:,1,1)
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[15]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Create a tensor of order 3</span>
-<span class="n">t2</span> <span class="o">=</span> <span class="n">Tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">)))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># First representation</span>
+<span class="n">I</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">L</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span>  <span class="c1"># define shape of the tensor in full form</span>
+<span class="n">Q</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">T</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span>  <span class="c1"># define multi-linear rank of the tensor in Tucker form</span>
 
-<span class="c1"># Display tensor frontal slices</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">5</span><span class="p">):</span>
-    <span class="n">t2</span><span class="o">.</span><span class="n">data</span><span class="p">[:,:,</span><span class="n">i</span><span class="p">]</span> <span class="o">*=</span> <span class="mi">2</span><span class="o">**</span><span class="n">i</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;tensor(:,:,</span><span class="si">{}</span><span class="s1">)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">t2</span><span class="o">.</span><span class="n">data</span><span class="p">[:,:,</span><span class="n">i</span><span class="p">])</span>
-    <span class="nb">print</span><span class="p">()</span>
+<span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">I</span> <span class="o">*</span> <span class="n">Q</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">Q</span><span class="p">)</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">J</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+<span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">K</span> <span class="o">*</span> <span class="n">P</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">L</span> <span class="o">*</span> <span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+
+<span class="c1"># Create core values</span>
+<span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">Q</span> <span class="o">*</span> <span class="n">R</span> <span class="o">*</span> <span class="n">P</span> <span class="o">*</span> <span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+
+<span class="c1"># Create Tucker representation</span>
+<span class="n">tensor_tkd</span> <span class="o">=</span> <span class="n">TensorTKD</span><span class="p">(</span><span class="n">fmat</span><span class="o">=</span><span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">D</span><span class="p">],</span> <span class="n">core_values</span><span class="o">=</span><span class="n">values</span><span class="p">)</span>
+
+<span class="c1"># Result preview</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tensor_tkd</span><span class="p">)</span>
 </pre></div>
 
      </div>
@@ -14935,36 +15034,9 @@ tensor(1,:,1,1)
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>tensor(:,:,0)
-[[1. 1.]
- [1. 1.]
- [1. 1.]
- [1. 1.]]
-
-tensor(:,:,1)
-[[2. 2.]
- [2. 2.]
- [2. 2.]
- [2. 2.]]
-
-tensor(:,:,2)
-[[4. 4.]
- [4. 4.]
- [4. 4.]
- [4. 4.]]
-
-tensor(:,:,3)
-[[8. 8.]
- [8. 8.]
- [8. 8.]
- [8. 8.]]
-
-tensor(:,:,4)
-[[16. 16.]
- [16. 16.]
- [16. 16.]
- [16. 16.]]
-
+<pre>Tucker representation of a tensor with multi-linear rank=(2, 3, 4, 5).
+Factor matrices represent properties: [&#39;mode-0&#39;, &#39;mode-1&#39;, &#39;mode-2&#39;, &#39;mode-3&#39;]
+With corresponding latent components described by (10, 10, 5, 2) features respectively.
 </pre>
 </div>
 </div>
@@ -14973,33 +15045,29 @@ tensor(:,:,4)
 
 </div>
 
-</div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="Unfolding">Unfolding<a class="anchor-link" href="#Unfolding">&#182;</a></h1><p>Conventionally, unfolding is considered to be a process of element mapping from a tensor to a matrix. In other words, it arranges the mode-$n$ fibers of a tensor to be the matrix columns. Thus, the mode-$n$ unfolding is denoted as:</p>
-$$\mathbf{\underline{A}} \xrightarrow{n} \mathbf{A}_{(n)}$$<p>Thus, this operations requires to specify a mode along which a tensor will be unfolded. For a third order tensor, a visual representation of such operation is as following</p>
-<p><img src="./imgs/unfolding.png" alt="Drawing" style="width: 600px;"/></p>
-<p>In <code>hottbox</code> this functionality is available through the corresponding methods of the <code>Tensor</code> object, for instance:</p>
-
-</div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[16]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Create 3-d array of data</span>
-<span class="n">array_3d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">24</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Second representation</span>
+<span class="n">I</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">L</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">4</span>  <span class="c1"># define shape of the tensor in full form</span>
+<span class="n">Q</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">T</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span>  <span class="c1"># define multi-linear rank of the tensor in Tucker form</span>
 
-<span class="c1"># Create tensor</span>
-<span class="n">tensor</span> <span class="o">=</span> <span class="n">Tensor</span><span class="p">(</span><span class="n">array_3d</span><span class="p">)</span>
+<span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">I</span> <span class="o">*</span> <span class="n">Q</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">Q</span><span class="p">)</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">J</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+<span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">K</span> <span class="o">*</span> <span class="n">P</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">L</span> <span class="o">*</span> <span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
 
-<span class="c1"># Unfolding of a tensor</span>
-<span class="n">tensor</span><span class="o">.</span><span class="n">unfold</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="c1"># Create core values</span>
+<span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">Q</span> <span class="o">*</span> <span class="n">R</span> <span class="o">*</span> <span class="n">P</span> <span class="o">*</span> <span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+
+<span class="c1"># Create Tucker representation</span>
+<span class="n">tensor_tkd</span> <span class="o">=</span> <span class="n">TensorTKD</span><span class="p">(</span><span class="n">fmat</span><span class="o">=</span><span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">D</span><span class="p">],</span> <span class="n">core_values</span><span class="o">=</span><span class="n">values</span><span class="p">)</span>
 
 <span class="c1"># Result preview</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span>
-<span class="n">tensor</span><span class="o">.</span><span class="n">data</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tensor_tkd</span><span class="p">)</span>
 </pre></div>
 
      </div>
@@ -15019,53 +15087,40 @@ $$\mathbf{\underline{A}} \xrightarrow{n} \mathbf{A}_{(n)}$$<p>Thus, this operati
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>This tensor is of order 2 and consists of 24 elements.
-Sizes and names of its modes are (2, 12) and [&#39;mode-0&#39;, &#39;mode-1_mode-2&#39;] respectively.
+<pre>Tucker representation of a tensor with multi-linear rank=(2, 2, 2, 2).
+Factor matrices represent properties: [&#39;mode-0&#39;, &#39;mode-1&#39;, &#39;mode-2&#39;, &#39;mode-3&#39;]
+With corresponding latent components described by (5, 10, 5, 4) features respectively.
 </pre>
 </div>
 </div>
 
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[16]:</div>
-
-
-
-
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>array([[ 0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11],
-       [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]])</pre>
 </div>
 
 </div>
 
-</div>
-
-</div>
-
-</div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h2 id="Assigment-3"><strong>Assigment 3</strong><a class="anchor-link" href="#Assigment-3">&#182;</a></h2><ol>
-<li>Create a tensor, $\mathbf{\underline{A}}$, of order 4, in such a way that its version unfolded along the second mode would have sizes <code>(5,72)</code>, that is $\mathbf{A}_{(n)} \in  \mathbb{R}^{5 \times 72}$. Validate your results by displaying the unfolded tensor.</li>
-</ol>
-
-</div>
-</div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h3 id="Solution-:-Part-1">Solution : Part 1<a class="anchor-link" href="#Solution-:-Part-1">&#182;</a></h3>
-</div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[17]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Create a tensor</span>
-<span class="n">t1</span> <span class="o">=</span> <span class="n">Tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">3</span><span class="o">*</span><span class="mi">5</span><span class="o">*</span><span class="mi">3</span><span class="o">*</span><span class="mi">8</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">8</span><span class="p">))</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">t1</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Third representation</span>
+<span class="n">I</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">L</span> <span class="o">=</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">25</span>  <span class="c1"># define shape of the tensor in full form</span>
+<span class="n">Q</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">T</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span>  <span class="c1"># define multi-linear rank of the tensor in Tucker form</span>
+
+<span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">I</span> <span class="o">*</span> <span class="n">Q</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">Q</span><span class="p">)</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">J</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+<span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">K</span> <span class="o">*</span> <span class="n">P</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">L</span> <span class="o">*</span> <span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+
+<span class="c1"># Create core values</span>
+<span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">Q</span> <span class="o">*</span> <span class="n">R</span> <span class="o">*</span> <span class="n">P</span> <span class="o">*</span> <span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">T</span><span class="p">)</span>
+
+<span class="c1"># Create Tucker representation</span>
+<span class="n">tensor_tkd</span> <span class="o">=</span> <span class="n">TensorTKD</span><span class="p">(</span><span class="n">fmat</span><span class="o">=</span><span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">,</span> <span class="n">D</span><span class="p">],</span> <span class="n">core_values</span><span class="o">=</span><span class="n">values</span><span class="p">)</span>
+
+<span class="c1"># Result preview</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tensor_tkd</span><span class="p">)</span>
 </pre></div>
 
      </div>
@@ -15085,8 +15140,9 @@ Sizes and names of its modes are (2, 12) and [&#39;mode-0&#39;, &#39;mode-1_mode
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>This tensor is of order 4 and consists of 360 elements.
-Sizes and names of its modes are (3, 5, 3, 8) and [&#39;mode-0&#39;, &#39;mode-1&#39;, &#39;mode-2&#39;, &#39;mode-3&#39;] respectively.
+<pre>Tucker representation of a tensor with multi-linear rank=(5, 6, 7, 8).
+Factor matrices represent properties: [&#39;mode-0&#39;, &#39;mode-1&#39;, &#39;mode-2&#39;, &#39;mode-3&#39;]
+With corresponding latent components described by (100, 2, 2, 25) features respectively.
 </pre>
 </div>
 </div>
@@ -15095,16 +15151,33 @@ Sizes and names of its modes are (3, 5, 3, 8) and [&#39;mode-0&#39;, &#39;mode-1
 
 </div>
 
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h3 id="Solution:-Part-3">Solution: Part 3<a class="anchor-link" href="#Solution:-Part-3">&#182;</a></h3>
+</div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[18]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Display unfolded version</span>
-<span class="n">t1</span><span class="o">.</span><span class="n">unfold</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">t1</span><span class="p">)</span>
-<span class="n">t1</span><span class="o">.</span><span class="n">data</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># First representation</span>
+<span class="n">I</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">K</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">10</span>  <span class="c1"># define shape of the tensor in full form</span>
+<span class="n">Q</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">P</span> <span class="o">=</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span>  <span class="c1"># define multi-linear rank of the tensor in Tucker form</span>
+
+<span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">I</span> <span class="o">*</span> <span class="n">Q</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">Q</span><span class="p">)</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">J</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+<span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">K</span> <span class="o">*</span> <span class="n">P</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span>
+
+<span class="c1"># Create core values</span>
+<span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">Q</span> <span class="o">*</span> <span class="n">R</span> <span class="o">*</span> <span class="n">P</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span>
+
+<span class="c1"># Create Tucker representation</span>
+<span class="n">tensor_tkd</span> <span class="o">=</span> <span class="n">TensorTKD</span><span class="p">(</span><span class="n">fmat</span><span class="o">=</span><span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="n">core_values</span><span class="o">=</span><span class="n">values</span><span class="p">)</span>
+
+<span class="c1"># Result preview</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tensor_tkd</span><span class="p">)</span>
 </pre></div>
 
      </div>
@@ -15124,90 +15197,39 @@ Sizes and names of its modes are (3, 5, 3, 8) and [&#39;mode-0&#39;, &#39;mode-1
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>This tensor is of order 2 and consists of 360 elements.
-Sizes and names of its modes are (5, 72) and [&#39;mode-1&#39;, &#39;mode-0_mode-2_mode-3&#39;] respectively.
+<pre>Tucker representation of a tensor with multi-linear rank=(7, 3, 2).
+Factor matrices represent properties: [&#39;mode-0&#39;, &#39;mode-1&#39;, &#39;mode-2&#39;]
+With corresponding latent components described by (5, 10, 10) features respectively.
 </pre>
 </div>
 </div>
 
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[18]:</div>
-
-
-
-
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>array([[  0,   1,   2,   3,   4,   5,   6,   7,   8,   9,  10,  11,  12,
-         13,  14,  15,  16,  17,  18,  19,  20,  21,  22,  23, 120, 121,
-        122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134,
-        135, 136, 137, 138, 139, 140, 141, 142, 143, 240, 241, 242, 243,
-        244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255, 256,
-        257, 258, 259, 260, 261, 262, 263],
-       [ 24,  25,  26,  27,  28,  29,  30,  31,  32,  33,  34,  35,  36,
-         37,  38,  39,  40,  41,  42,  43,  44,  45,  46,  47, 144, 145,
-        146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158,
-        159, 160, 161, 162, 163, 164, 165, 166, 167, 264, 265, 266, 267,
-        268, 269, 270, 271, 272, 273, 274, 275, 276, 277, 278, 279, 280,
-        281, 282, 283, 284, 285, 286, 287],
-       [ 48,  49,  50,  51,  52,  53,  54,  55,  56,  57,  58,  59,  60,
-         61,  62,  63,  64,  65,  66,  67,  68,  69,  70,  71, 168, 169,
-        170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182,
-        183, 184, 185, 186, 187, 188, 189, 190, 191, 288, 289, 290, 291,
-        292, 293, 294, 295, 296, 297, 298, 299, 300, 301, 302, 303, 304,
-        305, 306, 307, 308, 309, 310, 311],
-       [ 72,  73,  74,  75,  76,  77,  78,  79,  80,  81,  82,  83,  84,
-         85,  86,  87,  88,  89,  90,  91,  92,  93,  94,  95, 192, 193,
-        194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206,
-        207, 208, 209, 210, 211, 212, 213, 214, 215, 312, 313, 314, 315,
-        316, 317, 318, 319, 320, 321, 322, 323, 324, 325, 326, 327, 328,
-        329, 330, 331, 332, 333, 334, 335],
-       [ 96,  97,  98,  99, 100, 101, 102, 103, 104, 105, 106, 107, 108,
-        109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 216, 217,
-        218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230,
-        231, 232, 233, 234, 235, 236, 237, 238, 239, 336, 337, 338, 339,
-        340, 341, 342, 343, 344, 345, 346, 347, 348, 349, 350, 351, 352,
-        353, 354, 355, 356, 357, 358, 359]])</pre>
 </div>
 
 </div>
 
-</div>
-
-</div>
-
-</div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="Mode-n-product">Mode-n product<a class="anchor-link" href="#Mode-n-product">&#182;</a></h1><p><img src="./imgs/mode_n_product.png" alt="Drawing" style="width: 600px;"/></p>
-<p>The mode-$n$ product is a multiplication of a tensor  by a matrix along the $n^{th}$ mode of a tensor. This essentially means that each mode-$n$ fiber should be multiplied by this matrix. Mathematically, this can be expressed as:</p>
-$$\mathbf{\underline{X}} \times_n \mathbf{A} = \mathbf{\underline{Y}} \quad \Leftrightarrow  \quad \mathbf{Y}_{(n)} = \mathbf{A} \mathbf{X}_{(n)}  $$
-</div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[19]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">I</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">K</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span>
-<span class="n">J_new</span> <span class="o">=</span> <span class="mi">5</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Second representation</span>
+<span class="n">I</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">K</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">20</span>  <span class="c1"># define shape of the tensor in full form</span>
+<span class="n">Q</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">P</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">2</span>  <span class="c1"># define multi-linear rank of the tensor in Tucker form</span>
 
-<span class="c1"># Create tensor</span>
-<span class="n">array_3d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">I</span> <span class="o">*</span> <span class="n">J</span> <span class="o">*</span> <span class="n">K</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">J</span> <span class="p">,</span><span class="n">K</span><span class="p">)</span>
-<span class="n">X</span> <span class="o">=</span> <span class="n">Tensor</span><span class="p">(</span><span class="n">array_3d</span><span class="p">)</span>
+<span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">I</span> <span class="o">*</span> <span class="n">Q</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">Q</span><span class="p">)</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">J</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+<span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">K</span> <span class="o">*</span> <span class="n">P</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span>
 
-<span class="c1"># Create matrix</span>
-<span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">J_new</span> <span class="o">*</span> <span class="n">J</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">J_new</span><span class="p">,</span> <span class="n">J</span><span class="p">)</span>
+<span class="c1"># Create core values</span>
+<span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">Q</span> <span class="o">*</span> <span class="n">R</span> <span class="o">*</span> <span class="n">P</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span>
 
-<span class="c1"># Performs Mode-n product </span>
-<span class="n">Y</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">mode_n_product</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="c1"># Create Tucker representation</span>
+<span class="n">tensor_tkd</span> <span class="o">=</span> <span class="n">TensorTKD</span><span class="p">(</span><span class="n">fmat</span><span class="o">=</span><span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="n">core_values</span><span class="o">=</span><span class="n">values</span><span class="p">)</span>
 
-<span class="c1"># Preview of resulting tensor</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
-
-<span class="c1"># Preview of its unfolded version</span>
-<span class="n">Y</span><span class="o">.</span><span class="n">unfold</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">data</span>
+<span class="c1"># Result preview</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tensor_tkd</span><span class="p">)</span>
 </pre></div>
 
      </div>
@@ -15227,58 +15249,39 @@ $$\mathbf{\underline{X}} \times_n \mathbf{A} = \mathbf{\underline{Y}} \quad \Lef
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>This tensor is of order 3 and consists of 40 elements.
-Sizes and names of its modes are (2, 5, 4) and [&#39;mode-0&#39;, &#39;mode-1&#39;, &#39;mode-2&#39;] respectively.
+<pre>Tucker representation of a tensor with multi-linear rank=(3, 7, 2).
+Factor matrices represent properties: [&#39;mode-0&#39;, &#39;mode-1&#39;, &#39;mode-2&#39;]
+With corresponding latent components described by (5, 5, 20) features respectively.
 </pre>
 </div>
 </div>
 
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[19]:</div>
-
-
-
-
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>array([[ 20,  23,  26,  29,  56,  59,  62,  65],
-       [ 56,  68,  80,  92, 200, 212, 224, 236],
-       [ 92, 113, 134, 155, 344, 365, 386, 407],
-       [128, 158, 188, 218, 488, 518, 548, 578],
-       [164, 203, 242, 281, 632, 671, 710, 749]])</pre>
 </div>
 
 </div>
 
-</div>
-
-</div>
-
-</div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h2 id="Assignment-4"><strong>Assignment 4</strong><a class="anchor-link" href="#Assignment-4">&#182;</a></h2><ol>
-<li>Perform the mode-$n$ product of a 3-rd order tensor, $\mathbf{\underline{X}}$, with a matrix, $\mathbf{A} \in  \mathbb{R}^{5 \times 4}$, provided that the resulting tensor, $\mathbf{\underline{Y}}$, consists of <code>100</code> elements. Validate your results. </li>
-</ol>
-<blockquote><p><strong>Note:</strong> You are encouraged to experiment with the optional parameter <code>inplace</code> and to investigate its effect on the result.</p>
-</blockquote>
-
-</div>
-</div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h3 id="Solution:-Part-1">Solution: Part 1<a class="anchor-link" href="#Solution:-Part-1">&#182;</a></h3>
-</div>
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[20]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Create original tensor </span>
-<span class="n">t1</span> <span class="o">=</span> <span class="n">Tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="mi">4</span><span class="o">*</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">10</span><span class="p">)))</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">t1</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Third representation</span>
+<span class="n">I</span><span class="p">,</span> <span class="n">J</span><span class="p">,</span> <span class="n">K</span> <span class="o">=</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">5</span>  <span class="c1"># define shape of the tensor in full form</span>
+<span class="n">Q</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">P</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">7</span>  <span class="c1"># define multi-linear rank of the tensor in Tucker form</span>
+
+<span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">I</span> <span class="o">*</span> <span class="n">Q</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">I</span><span class="p">,</span> <span class="n">Q</span><span class="p">)</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">J</span> <span class="o">*</span> <span class="n">R</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">J</span><span class="p">,</span> <span class="n">R</span><span class="p">)</span>
+<span class="n">C</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">K</span> <span class="o">*</span> <span class="n">P</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span>
+
+<span class="c1"># Create core values</span>
+<span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">Q</span> <span class="o">*</span> <span class="n">R</span> <span class="o">*</span> <span class="n">P</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">P</span><span class="p">)</span>
+
+<span class="c1"># Create Tucker representation</span>
+<span class="n">tensor_tkd</span> <span class="o">=</span> <span class="n">TensorTKD</span><span class="p">(</span><span class="n">fmat</span><span class="o">=</span><span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="n">core_values</span><span class="o">=</span><span class="n">values</span><span class="p">)</span>
+
+<span class="c1"># Result preview</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">tensor_tkd</span><span class="p">)</span>
 </pre></div>
 
      </div>
@@ -15298,8 +15301,9 @@ Sizes and names of its modes are (2, 5, 4) and [&#39;mode-0&#39;, &#39;mode-1&#3
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>This tensor is of order 3 and consists of 80 elements.
-Sizes and names of its modes are (2, 4, 10) and [&#39;mode-0&#39;, &#39;mode-1&#39;, &#39;mode-2&#39;] respectively.
+<pre>Tucker representation of a tensor with multi-linear rank=(3, 2, 7).
+Factor matrices represent properties: [&#39;mode-0&#39;, &#39;mode-1&#39;, &#39;mode-2&#39;]
+With corresponding latent components described by (50, 2, 5) features respectively.
 </pre>
 </div>
 </div>
@@ -15308,30 +15312,24 @@ Sizes and names of its modes are (2, 4, 10) and [&#39;mode-0&#39;, &#39;mode-1&#
 
 </div>
 
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+</div>
+<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h3 id="Solution:-Part-4">Solution: Part 4<a class="anchor-link" href="#Solution:-Part-4">&#182;</a></h3>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-InputArea jp-Cell-inputArea">
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[21]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Create matrix</span>
-<span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">5</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">5</span><span class="p">,</span><span class="mi">4</span><span class="p">))</span>
-</pre></div>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># use this variable for your answer</span>
+<span class="n">answer_2_4</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;The main difference between the Tucker and Kruskal representations </span>
+<span class="s2">is that while the Krusckal representation is restricted to having only diagonal elements on its core, by</span>
+<span class="s2">accounting for multilinearity in rank, the Tucker representation is allowed to have a dense core, allowing for </span>
+<span class="s2">more representational flexibility. &quot;&quot;&quot;</span>  
 
-     </div>
-</div>
-</div>
-</div>
-
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[22]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-     <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Perform mode-n product </span>
-<span class="n">Y</span> <span class="o">=</span> <span class="n">t1</span><span class="o">.</span><span class="n">mode_n_product</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">Y</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">answer_2_4</span><span class="p">)</span>
 </pre></div>
 
      </div>
@@ -15351,418 +15349,16 @@ Sizes and names of its modes are (2, 4, 10) and [&#39;mode-0&#39;, &#39;mode-1&#
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>This tensor is of order 3 and consists of 100 elements.
-Sizes and names of its modes are (2, 5, 10) and [&#39;mode-0&#39;, &#39;mode-1&#39;, &#39;mode-2&#39;] respectively.
+<pre>The main difference between the Tucker and Kruskal representations 
+is that while the Krusckal representation is restricted to having only diagonal elements on its core, by
+accounting for multilinearity in rank, the Tucker representation is allowed to have a dense core, allowing for 
+more representational flexibility. 
 </pre>
 </div>
 </div>
 
 </div>
 
-</div>
-
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[23]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-     <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Validate equivalence between the left and right hand side</span>
-<span class="n">Y</span><span class="o">.</span><span class="n">unfold</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">data</span>
-</pre></div>
-
-     </div>
-</div>
-</div>
-</div>
-
-<div class="jp-Cell-outputWrapper">
-
-
-<div class="jp-OutputArea jp-Cell-outputArea">
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[23]:</div>
-
-
-
-
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>array([[ 140,  146,  152,  158,  164,  170,  176,  182,  188,  194,  380,
-         386,  392,  398,  404,  410,  416,  422,  428,  434],
-       [ 380,  402,  424,  446,  468,  490,  512,  534,  556,  578, 1260,
-        1282, 1304, 1326, 1348, 1370, 1392, 1414, 1436, 1458],
-       [ 620,  658,  696,  734,  772,  810,  848,  886,  924,  962, 2140,
-        2178, 2216, 2254, 2292, 2330, 2368, 2406, 2444, 2482],
-       [ 860,  914,  968, 1022, 1076, 1130, 1184, 1238, 1292, 1346, 3020,
-        3074, 3128, 3182, 3236, 3290, 3344, 3398, 3452, 3506],
-       [1100, 1170, 1240, 1310, 1380, 1450, 1520, 1590, 1660, 1730, 3900,
-        3970, 4040, 4110, 4180, 4250, 4320, 4390, 4460, 4530]])</pre>
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h1 id="Properties-of-mode-n-product">Properties of mode-n product<a class="anchor-link" href="#Properties-of-mode-n-product">&#182;</a></h1><ol>
-<li><p>For distinct modes in a series of multiplications, the order of the multiplication is irrelevent:</p>
-<p>$$\mathbf{\underline{X}} \times_n \mathbf{A} \times_m \mathbf{B} = \mathbf{\underline{X}} \times_m \mathbf{B} \times_n \mathbf{A} \quad (m \neq n)$$</p>
-</li>
-<li><p>However, this does not hold if the modes are the same :</p>
-<p>$$\mathbf{\underline{X}} \times_n \mathbf{A} \times_n \mathbf{B} = \mathbf{\underline{X}} \times_n (\mathbf{B}\mathbf{A})$$</p>
-</li>
-</ol>
-
-</div>
-</div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h2 id="Assignment-5"><strong>Assignment 5</strong><a class="anchor-link" href="#Assignment-5">&#182;</a></h2><ol>
-<li>Validate both of the above properties empirically </li>
-<li>Prove the second property analytically</li>
-</ol>
-<blockquote><p><strong>Note:</strong> Be aware of consequences of the optional parameter <code>inplace</code> (its default value is set to <code>True</code>).</p>
-</blockquote>
-
-</div>
-</div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h3 id="Solution:-Part-1">Solution: Part 1<a class="anchor-link" href="#Solution:-Part-1">&#182;</a></h3>
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[24]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-     <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Create tensor</span>
-<span class="n">X</span> <span class="o">=</span> <span class="n">Tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)))</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
-</pre></div>
-
-     </div>
-</div>
-</div>
-</div>
-
-<div class="jp-Cell-outputWrapper">
-
-
-<div class="jp-OutputArea jp-Cell-outputArea">
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-
-
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>This tensor is of order 3 and consists of 12 elements.
-Sizes and names of its modes are (2, 2, 3) and [&#39;mode-0&#39;, &#39;mode-1&#39;, &#39;mode-2&#39;] respectively.
-</pre>
-</div>
-</div>
-
-</div>
-
-</div>
-
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[25]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-     <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Create matrices</span>
-<span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
-<span class="n">B1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
-<span class="n">B2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">5</span><span class="p">)</span>
-</pre></div>
-
-     </div>
-</div>
-</div>
-</div>
-
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[26]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-     <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Validate property 1</span>
-<span class="n">Y1</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">mode_n_product</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="c1"># Different modes</span>
-<span class="n">Y1</span> <span class="o">=</span> <span class="n">Y1</span><span class="o">.</span><span class="n">mode_n_product</span><span class="p">(</span><span class="n">B1</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">Y2</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">mode_n_product</span><span class="p">(</span><span class="n">B1</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">Y2</span> <span class="o">=</span> <span class="n">Y2</span><span class="o">.</span><span class="n">mode_n_product</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="c1"># Display results</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">Y1</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">Y1</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">Y2</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">Y2</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-</pre></div>
-
-     </div>
-</div>
-</div>
-</div>
-
-<div class="jp-Cell-outputWrapper">
-
-
-<div class="jp-OutputArea jp-Cell-outputArea">
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-
-
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>This tensor is of order 3 and consists of 45 elements.
-Sizes and names of its modes are (5, 3, 3) and [&#39;mode-0&#39;, &#39;mode-1&#39;, &#39;mode-2&#39;] respectively.
-[[[   9   10   11]
-  [  39   44   49]
-  [  69   78   87]]
-
- [[  33   38   43]
-  [ 135  160  185]
-  [ 237  282  327]]
-
- [[  57   66   75]
-  [ 231  276  321]
-  [ 405  486  567]]
-
- [[  81   94  107]
-  [ 327  392  457]
-  [ 573  690  807]]
-
- [[ 105  122  139]
-  [ 423  508  593]
-  [ 741  894 1047]]]
-This tensor is of order 3 and consists of 45 elements.
-Sizes and names of its modes are (5, 3, 3) and [&#39;mode-0&#39;, &#39;mode-1&#39;, &#39;mode-2&#39;] respectively.
-[[[   9   10   11]
-  [  39   44   49]
-  [  69   78   87]]
-
- [[  33   38   43]
-  [ 135  160  185]
-  [ 237  282  327]]
-
- [[  57   66   75]
-  [ 231  276  321]
-  [ 405  486  567]]
-
- [[  81   94  107]
-  [ 327  392  457]
-  [ 573  690  807]]
-
- [[ 105  122  139]
-  [ 423  508  593]
-  [ 741  894 1047]]]
-</pre>
-</div>
-</div>
-
-</div>
-
-</div>
-
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[27]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-     <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Validate property 2</span>
-<span class="n">Y3</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">mode_n_product</span><span class="p">(</span><span class="n">A</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span> <span class="c1"># Different modes</span>
-<span class="n">Y3</span> <span class="o">=</span> <span class="n">Y3</span><span class="o">.</span><span class="n">mode_n_product</span><span class="p">(</span><span class="n">B2</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="n">Y4</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">mode_n_product</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">matmul</span><span class="p">(</span><span class="n">B2</span><span class="p">,</span><span class="n">A</span><span class="p">),</span> <span class="n">mode</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="c1"># Display results</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">Y3</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">Y3</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">Y4</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">Y4</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
-</pre></div>
-
-     </div>
-</div>
-</div>
-</div>
-
-<div class="jp-Cell-outputWrapper">
-
-
-<div class="jp-OutputArea jp-Cell-outputArea">
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-
-
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>This tensor is of order 3 and consists of 12 elements.
-Sizes and names of its modes are (2, 2, 3) and [&#39;mode-0&#39;, &#39;mode-1&#39;, &#39;mode-2&#39;] respectively.
-[[[ 420  550  680]
-  [ 810  940 1070]]
-
- [[1170 1525 1880]
-  [2235 2590 2945]]]
-This tensor is of order 3 and consists of 12 elements.
-Sizes and names of its modes are (2, 2, 3) and [&#39;mode-0&#39;, &#39;mode-1&#39;, &#39;mode-2&#39;] respectively.
-[[[ 420  550  680]
-  [ 810  940 1070]]
-
- [[1170 1525 1880]
-  [2235 2590 2945]]]
-</pre>
-</div>
-</div>
-
-</div>
-
-</div>
-
-</div>
-<div class="jp-Cell-inputWrapper"><div class="jp-InputPrompt jp-InputArea-prompt">
-</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<h3 id="Solution:-Part-2">Solution: Part 2<a class="anchor-link" href="#Solution:-Part-2">&#182;</a></h3><p>Use <a href="https://stackoverflow.com/questions/13208286/how-to-write-latex-in-ipython-notebook">LaTeX syntax</a> for analytical deriviations for the second property below.</p>
-
-</div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[28]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-     <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c">%%latex</span>
-
-As shown empirically, while the order of consecutive mode-n multiplications can be reversed given each operation
-acts upon a different mode, when both act on the same mode this is not the case, and instead the operation can be
-obtained by carrying out mode-n multiplication with the product of the two matrices (opposite order). Consider a 
-tensor <span class="s">$</span><span class="nv">\mathbf</span><span class="nb">{</span><span class="nv">\underline</span><span class="nb">{X}}_{d_{</span><span class="m">1</span><span class="nb">} </span><span class="nv">\times</span><span class="nb"> d_{</span><span class="m">2</span><span class="nb">} </span><span class="nv">\times</span><span class="nb"> ... </span><span class="nv">\times</span><span class="nb"> d_{TO}}</span><span class="s">$</span> and two matrices <span class="s">$</span><span class="nv">\mathbf</span><span class="nb">{A}_{m </span><span class="nv">\times</span><span class="nb"> k}</span><span class="s">$</span>
-and <span class="s">$</span><span class="nv">\mathbf</span><span class="nb">{B}_{p </span><span class="nv">\times</span><span class="nb"> m}</span><span class="s">$</span>. Each mode-n multiplication with a matrix can be viewed as applying the linear transformation
-of the matrix to each of the mode-n fibers of the tensor, resulting in new fibers of different dimension sizes (unless
-a square matrix is used). Therefore, the operation <span class="s">$</span><span class="nv">\mathbf</span><span class="nb">{</span><span class="nv">\underline</span><span class="nb">{X}} </span><span class="nv">\times</span><span class="nb">_{n} </span><span class="nv">\mathbf</span><span class="nb">{A} </span><span class="nv">\times</span><span class="nb">_{n} </span><span class="nv">\mathbf</span><span class="nb">{B}</span><span class="s">$</span> can
-be carried out as long as <span class="s">$</span><span class="nb">d_{n} </span><span class="o">=</span><span class="nb"> k</span><span class="s">$</span>, where the first step of the operation results in a tensor with dimension <span class="s">$</span><span class="nb">m</span><span class="s">$</span> where 
-before it was <span class="s">$</span><span class="nb">d_{n}</span><span class="s">$</span>. Furthermore, the next step can only be carried out because the second dimension of <span class="s">$</span><span class="nv">\mathbf</span><span class="nb">{B}</span><span class="s">$</span>
-is also <span class="s">$</span><span class="nb">m</span><span class="s">$</span>. If the operation was attempted in the reverse order (<span class="s">$</span><span class="nv">\mathbf</span><span class="nb">{</span><span class="nv">\underline</span><span class="nb">{X}} </span><span class="nv">\times</span><span class="nb">_{n} </span><span class="nv">\mathbf</span><span class="nb">{B} </span><span class="nv">\times</span><span class="nb">_{n} </span><span class="nv">\mathbf</span><span class="nb">{A}</span><span class="s">$</span>),
-the dimensions would be inconsistent and the operation would not be possible, proving the first step by contradiction.
-</pre></div>
-
-     </div>
-</div>
-</div>
-</div>
-
-<div class="jp-Cell-outputWrapper">
-
-
-<div class="jp-OutputArea jp-Cell-outputArea">
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-
-
-
-
-<div class="jp-RenderedLatex jp-OutputArea-output " data-mime-type="text/latex">
-
-As shown empirically, while the order of consecutive mode-n multiplications can be reversed given each operation
-acts upon a different mode, when both act on the same mode this is not the case, and instead the operation can be
-obtained by carrying out mode-n multiplication with the product of the two matrices (opposite order). Consider a 
-tensor $\mathbf{\underline{X}}_{d_{1} \times d_{2} \times ... \times d_{TO}}$ and two matrices $\mathbf{A}_{m \times k}$
-and $\mathbf{B}_{p \times m}$. Each mode-n multiplication with a matrix can be viewed as applying the linear transformation
-of the matrix to each of the mode-n fibers of the tensor, resulting in new fibers of different dimension sizes (unless
-a square matrix is used). Therefore, the operation $\mathbf{\underline{X}} \times_{n} \mathbf{A} \times_{n} \mathbf{B}$ can
-be carried out as long as $d_{n} = k$, where the first step of the operation results in a tensor with dimension $m$ where 
-before it was $d_{n}$. Furthermore, the next step can only be carried out because the second dimension of $\mathbf{B}$
-is also $m$. If the operation was attempted in the reverse order ($\mathbf{\underline{X}} \times_{n} \mathbf{B} \times_{n} \mathbf{A}$),
-the dimensions would be inconsistent and the operation would not be possible, proving the first step by contradiction.                     
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[29]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-     <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="c">%%latex</span>
-
-Furthermore, from the point of view of mode-n multiplication being treated as a linear transformation applied to all
-the mode-n fibers, we can consider the effect of each mode-n multiplication step on a single mode fibre (assumiming consistent matrices).
-For a given matrix, <span class="s">$</span><span class="nv">\mathbf</span><span class="nb">{A}</span><span class="s">$</span>, the first mode-n multiplication would result in the output mode fibers shown below:
-<span class="sb">$$</span><span class="nb"> </span><span class="nv">\mathbf</span><span class="nb">{x}_{m} </span><span class="o">=</span><span class="nb"> </span><span class="nv">\mathbf</span><span class="nb">{A}</span><span class="nv">\mathbf</span><span class="nb">{x}_{d_{n}} </span><span class="s">$$</span>
-Following a similar logic, the second mode-n multiplication would result in the output mode fibers in form shown below:
-<span class="sb">$$</span><span class="nb"> </span><span class="nv">\mathbf</span><span class="nb">{x}_{p} </span><span class="o">=</span><span class="nb"> </span><span class="nv">\mathbf</span><span class="nb">{B}</span><span class="nv">\mathbf</span><span class="nb">{x}_{m} </span><span class="o">=</span><span class="nb"> </span><span class="nv">\mathbf</span><span class="nb">{B}</span><span class="nv">\mathbf</span><span class="nb">{A}</span><span class="nv">\mathbf</span><span class="nb">{x}_{d_{n}} </span><span class="o">=</span><span class="nb">  </span><span class="o">(</span><span class="nv">\mathbf</span><span class="nb">{B}</span><span class="nv">\mathbf</span><span class="nb">{A}</span><span class="o">)</span><span class="nv">\mathbf</span><span class="nb">{x}_{d_{n}} </span><span class="s">$$</span>
-</pre></div>
-
-     </div>
-</div>
-</div>
-</div>
-
-<div class="jp-Cell-outputWrapper">
-
-
-<div class="jp-OutputArea jp-Cell-outputArea">
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-
-
-
-
-<div class="jp-RenderedLatex jp-OutputArea-output " data-mime-type="text/latex">
-
-Furthermore, from the point of view of mode-n multiplication being treated as a linear transformation applied to all
-the mode-n fibers, we can consider the effect of each mode-n multiplication step on a single mode fibre (assumiming consistent matrices).
-For a given matrix, $\mathbf{A}$, the first mode-n multiplication would result in the output mode fibers shown below:
-$$ \mathbf{x}_{m} = \mathbf{A}\mathbf{x}_{d_{n}} $$
-Following a similar logic, the second mode-n multiplication would result in the output mode fibers in form shown below:
-$$ \mathbf{x}_{p} = \mathbf{B}\mathbf{x}_{m} = \mathbf{B}\mathbf{A}\mathbf{x}_{d_{n}} =  (\mathbf{B}\mathbf{A})\mathbf{x}_{d_{n}} $$
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-     <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span> 
-</pre></div>
-
-     </div>
-</div>
-</div>
 </div>
 
 </div>
