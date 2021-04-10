@@ -102,8 +102,8 @@ MSPE = zeros(2, 2);
 [~,xhat_anc] = anc_lms(s, sec_noise, lr, 10);
 
 % Signal reconstruction via noise cancellation
-figure(1); subplot(1, 2, 1);
-hold on; set(gca,'fontsize', 16);
+figure(1); subplot(2, 1, 1);
+hold on; set(gca,'fontsize', 18);
 plot([1:length(xhat)], xhat, 'k');
 plot([1:length(xhat_anc)], xhat_anc, 'g');
 plot([1:length(x)], x, 'red');
@@ -116,8 +116,8 @@ hold off;
 MSPE_ale = 10*log10(movmean((x-xhat).^2, 30));
 MSPE_anc = 10*log10(movmean((x-xhat_anc).^2, 30));
 
-subplot(1, 2, 2);
-hold on; set(gca,'fontsize', 16);
+subplot(2, 1, 2);
+hold on; set(gca,'fontsize', 18);
 plot([1:length(MSPE_ale)], MSPE_ale, 'r');
 plot([1:length(MSPE_anc)], MSPE_anc, 'b');
 xlabel('Sample (n)'); ylabel('MSPE (dB)'); 

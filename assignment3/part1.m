@@ -29,13 +29,13 @@ end
 close(f);
 mean_error = mean(abs(error_store).^2,3);
 % Plots
-figure(1); subplot(1,3,1); hold on; set(gca,'fontsize', 18);
+figure(1); subplot(3,1,1); hold on; set(gca,'fontsize', 18);
 plot(input, 'bo'); title('WGN'); 
 xlabel('Re(z)'); ylabel('Im(z)'); hold off;
-subplot(1,3,2); hold on; set(gca,'fontsize', 18);
+subplot(3,1,2); hold on; set(gca,'fontsize', 18);
 plot(data, 'ro'); title('WLMA(1)'); 
 xlabel('Re(z)'); ylabel('Im(z)'); hold off;
-subplot(1,3,3); hold on; set(gca,'fontsize', 18);
+subplot(3,1,3); hold on; set(gca,'fontsize', 18);
 plot([1:1000], pow2db(mean_error(1,:)));
 plot([1:1000], pow2db(mean_error(2,:)));
 ylabel('Squared Error (dB)'); xlabel('Time (samples)');

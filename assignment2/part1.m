@@ -83,24 +83,24 @@ end
 params_tot = squeeze(mean(params_tot, 3)); % param update average over realisations
 params_tot1 = squeeze(params_tot(1,:,:,:));
 params_tot2 = squeeze(params_tot(2,:,:,:));
-figure(1); subplot(1, 2, 1); hold on; set(gca,'fontsize', 14); ylim([0, 1]);
-plot([1:length(params_tot1(1, :))], params_tot1(1, :)); % u1, both params
-plot([1:length(params_tot1(2, :))], params_tot1(2, :));
-plot([1:length(params_tot1(1, :))], a1*ones(length(params_tot1(1, :))), '--')
-plot([1:length(params_tot1(2, :))], a2*ones(length(params_tot1(2, :))), '--')
-xlabel('Time Step'); ylabel('LMS Parameter Estimate');
-title('LMS Coefficient Estimation Dynamics ($\mu=0.05$)', 'Interpreter', 'Latex');
-legend('$\hat{a}_{1}$','$\hat{a}_{2}$', '$a_{1}$', '$a_{2}$', 'Interpreter', 'Latex');
+figure(1); subplot(1, 2, 1); hold on; set(gca,'fontsize', 18); ylim([0, 1]);
+h(1)=plot([1:length(params_tot1(1, :))], params_tot1(1, :), 'r'); % u1, both params
+h(2)=plot([1:length(params_tot1(2, :))], params_tot1(2, :), 'b');
+h(3)=plot([1:length(params_tot1(1, :))], a1*ones(1,length(params_tot1(1, :))), '--k');
+h(4)=plot([1:length(params_tot1(2, :))], a2*ones(1,length(params_tot1(2, :))), '--m');
+xlabel('Time Step'); ylabel('Parameter Estimate');
+title('LMS Coefficient Estimation ($\mu=0.05$)', 'Interpreter', 'Latex');
+legend(h,'$a_{1}$', '$a_{2}$', '$\hat{a}_{1}$','$\hat{a}_{2}$', 'Interpreter', 'Latex');
 hold off;
 
-subplot(1, 2, 2); hold on; set(gca,'fontsize', 14); ylim([0, 1]);
-plot([1:length(params_tot2(1, :))], params_tot2(1, :)); % u1, both params
-plot([1:length(params_tot2(2, :))], params_tot2(2, :));
-plot([1:length(params_tot2(1, :))], a1*ones(length(params_tot2(1, :))), '--')
-plot([1:length(params_tot2(2, :))], a2*ones(length(params_tot2(2, :))), '--')
-xlabel('Time Step'); ylabel('LMS Parameter Estimate');
-title('LMS Coefficient Estimation Dynamics ($\mu=0.01$)', 'Interpreter', 'Latex');
-legend('$\hat{a}_{1}$','$\hat{a}_{2}$', '$a_{1}$', '$a_{2}$', 'Interpreter', 'Latex');
+subplot(1, 2, 2); hold on; set(gca,'fontsize', 18); ylim([0, 1]);
+h(1)=plot([1:length(params_tot2(1, :))], params_tot2(1, :), 'r'); % u1, both params
+h(2)=plot([1:length(params_tot2(2, :))], params_tot2(2, :), 'b');
+h(3)=plot([1:length(params_tot2(1, :))], a1*ones(1,length(params_tot2(1, :))), '--k');
+h(4)=plot([1:length(params_tot2(2, :))], a2*ones(1,length(params_tot2(2, :))), '--m');
+xlabel('Time Step'); ylabel('Parameter Estimate');
+title('LMS Coefficient Estimation ($\mu=0.01$)', 'Interpreter', 'Latex');
+legend(h,'$a_{1}$', '$a_{2}$', '$\hat{a}_{1}$','$\hat{a}_{2}$', 'Interpreter', 'Latex');
 hold off;
 
 
@@ -125,15 +125,15 @@ for j = 1:2
         % Plot appropriate graph obtained
         params = squeeze(mean(params_tot, 3));
         subplot(3, 2, idx(k, j)); hold on;
-        set(gca,'fontsize', 16); ylim([0, 1]);
-        plot([1:length(params(1, :))], params(1,:)); %
-        plot([1:length(params(2, :))], params(2, :));
-        plot([1:length(params(1, :))], a1*ones(length(params(1, :))), '--');
-        plot([1:length(params(2, :))], a2*ones(length(params(2, :))), '--');
-        title(sprintf('Leaky LMS Coefficient Dynamics ($\\mu=%.2f, \\gamma=%.2f$)',...
+        set(gca,'fontsize', 18); ylim([0, 1]);
+        h(1)=plot([1:length(params(1, :))], params(1,:)); %
+        h(2)=plot([1:length(params(2, :))], params(2, :));
+        h(3)=plot([1:length(params(1, :))], a1*ones(1,length(params(1, :))), '--');
+        h(4)=plot([1:length(params(2, :))], a2*ones(1,length(params(2, :))), '--');
+        title(sprintf('Leaky LMS Coefficient ($\\mu=%.2f, \\gamma=%.2f$)',...
             lrs(j), gammas(k)), 'Interpreter', 'Latex');
-        legend('$\hat{a}_{1}$','$\hat{a}_{2}$', '$a_{1}$', '$a_{2}$', 'Interpreter', 'Latex');
-        xlabel('Time Step'); ylabel('LMS Estimate');
+        legend(h,'$\hat{a}_{1}$','$\hat{a}_{2}$', '$a_{1}$', '$a_{2}$', 'Interpreter', 'Latex');
+        xlabel('Time Step'); ylabel('Estimate');
         hold off
     end
 end
